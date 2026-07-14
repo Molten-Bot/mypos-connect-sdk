@@ -1,0 +1,925 @@
+openapi: 3.0.3
+info:
+  title: MyPOS Connect API
+  version: "2.0"
+  description: |
+    OpenAPI description derived from "MyPOS Connect API V2" document version 1.4.
+
+    The API uses JWT bearer tokens for most calls. Tokens are obtained from
+    `POST /auth/token` and are valid for 120 minutes. All POST and PUT request
+    bodies are JSON.
+servers:
+  - url: https://api.myposconnect.com/api/v2
+    description: Production
+tags:
+  - name: Auth
+  - name: Products
+  - name: Customers
+  - name: Stores
+  - name: Sales
+security:
+  - bearerAuth: []
+paths:
+  /auth/token:
+    post:
+      tags:
+        - Auth
+      summary: Get an API token
+      description: |
+        Authenticate with API user email and password to obtain a JWT bearer
+        token. The source document describes email/password authentication and
+        shows Postman Authorization setup, but does not include the exact body
+        schema from Figure 1; clients may need to provide credentials according
+        to their provisioned API account.
+      security:
+        - basicAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthTokenRequest"
+      responses:
+        "200":
+          description: Token returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /naproducts:
+    get:
+      tags:
+        - Products
+      summary: List general product data
+      description: |
+        Returns general/static product details such as descriptions, notes,
+        classification and related product fields. Pagination is recommended for
+        large result sets.
+      parameters:
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/FieldList"
+        - $ref: "#/components/parameters/ProductSortKey"
+        - $ref: "#/components/parameters/WebProductFilter"
+        - $ref: "#/components/parameters/ActiveFilter"
+        - $ref: "#/components/parameters/StyleCodeFilter"
+      responses:
+        "200":
+          description: Product list returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /naproducts/{ProductCode}:
+    get:
+      tags:
+        - Products
+      summary: Get general details for a single product
+      parameters:
+        - $ref: "#/components/parameters/ProductCode"
+        - $ref: "#/components/parameters/FieldList"
+      responses:
+        "200":
+          description: Product returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /naproducts/~{LastEditDate}:
+    get:
+      tags:
+        - Products
+      summary: List general products changed since a date
+      parameters:
+        - $ref: "#/components/parameters/LastEditDate"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/FieldList"
+        - $ref: "#/components/parameters/ProductSortKey"
+      responses:
+        "200":
+          description: Changed products returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /products:
+    get:
+      tags:
+        - Products
+      summary: List products
+      description: |
+        Product listing endpoint shown in the source document for active product
+        filtering. Most product examples use `/naproducts`; this path is included
+        as documented.
+      parameters:
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/FieldList"
+        - $ref: "#/components/parameters/ProductSortKey"
+        - $ref: "#/components/parameters/WebProductFilter"
+        - $ref: "#/components/parameters/ActiveFilter"
+        - $ref: "#/components/parameters/StyleCodeFilter"
+      responses:
+        "200":
+          description: Product list returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /productspq/~{StoreCode}~{LastEditDate}:
+    get:
+      tags:
+        - Products
+      summary: List store product price, cost, quantity and tax changes
+      description: |
+        Returns price, cost, quantity available and tax for all products modified
+        after the specified UTC date/time. The documented path uses two `~`
+        separators.
+      parameters:
+        - $ref: "#/components/parameters/StoreCode"
+        - $ref: "#/components/parameters/LastEditDate"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Page"
+      responses:
+        "200":
+          description: Store product data returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreProductListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /productspq/{StoreCode}~{ProductCode}:
+    get:
+      tags:
+        - Products
+      summary: Get store price and quantity for a product
+      parameters:
+        - $ref: "#/components/parameters/StoreCode"
+        - $ref: "#/components/parameters/ProductCode"
+      responses:
+        "200":
+          description: Store product data returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreProduct"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /productspqo/~{StoreCode}~{LastEditDate}:
+    get:
+      tags:
+        - Products
+      summary: List store product changes including quantity on order
+      description: |
+        Returns price, cost, quantity available, tax and quantity on order for
+        all products modified after the specified UTC date/time.
+      parameters:
+        - $ref: "#/components/parameters/StoreCode"
+        - $ref: "#/components/parameters/LastEditDate"
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Page"
+      responses:
+        "200":
+          description: Store product data returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreProductListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /productspqo/{StoreCode}~{ProductCode}:
+    get:
+      tags:
+        - Products
+      summary: Get store price, quantity, tax and quantity on order for a product
+      parameters:
+        - $ref: "#/components/parameters/StoreCode"
+        - $ref: "#/components/parameters/ProductCode"
+      responses:
+        "200":
+          description: Store product data returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreProduct"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /ProductSerial/{StoreCode}~{ProductCode}~{SerialNumber}:
+    get:
+      tags:
+        - Products
+      summary: Get product serial number status
+      description: |
+        Serial number status values: `-1` Not Found, `0` Available, `1` Sold,
+        `2` Transferred Out, `3` Returned, `4` Deleted, `5` In Limbo.
+      parameters:
+        - $ref: "#/components/parameters/StoreCode"
+        - $ref: "#/components/parameters/ProductCode"
+        - name: SerialNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Serial number status returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SerialNumberStatusResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /naCustomers:
+    post:
+      tags:
+        - Customers
+      summary: Create a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+      responses:
+        "200":
+          description: Customer created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /naCustomers/{CustomerCode}:
+    get:
+      tags:
+        - Customers
+      summary: Get a customer
+      description: |
+        Customers are looked up by customer code by default. A database can be
+        configured to look up this value as an email address instead.
+      parameters:
+        - $ref: "#/components/parameters/CustomerCode"
+      responses:
+        "200":
+          description: Customer returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags:
+        - Customers
+      summary: Update a customer
+      parameters:
+        - $ref: "#/components/parameters/CustomerCode"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+      responses:
+        "200":
+          description: Customer updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /globalcustomers/{EmailAddress}:
+    get:
+      tags:
+        - Customers
+      summary: Get a global customer
+      parameters:
+        - $ref: "#/components/parameters/EmailAddress"
+      responses:
+        "200":
+          description: Global customer returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlobalCustomer"
+        default:
+          $ref: "#/components/responses/Error"
+    put:
+      tags:
+        - Customers
+      summary: Update a global customer
+      description: Global Customers support a limited set of fields for update.
+      parameters:
+        - $ref: "#/components/parameters/EmailAddress"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GlobalCustomer"
+      responses:
+        "200":
+          description: Global customer updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlobalCustomer"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /Stores:
+    get:
+      tags:
+        - Stores
+      summary: List stores
+      parameters:
+        - $ref: "#/components/parameters/PageSize"
+        - $ref: "#/components/parameters/Page"
+      responses:
+        "200":
+          description: Store list returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /CommitQty:
+    post:
+      tags:
+        - Sales
+      summary: Insert committed quantities
+      description: |
+        Reserves inventory for a web order before the sale is finalized.
+        Negative commit values can reverse individual committed quantities.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommitQuantityRequest"
+      responses:
+        "200":
+          description: Committed quantities inserted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /CommitQty/{OrderNumber}:
+    get:
+      tags:
+        - Sales
+      summary: View committed quantities for an order
+      parameters:
+        - $ref: "#/components/parameters/OrderNumber"
+      responses:
+        "200":
+          description: Committed quantities returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommitQuantityResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /CommitPts:
+    post:
+      tags:
+        - Sales
+      summary: Commit or reverse customer reward points
+      description: |
+        Reserve reward points before final sale processing. Send negative
+        `Points` values to commit points and positive values to reverse a
+        previous point commitment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommitPointsRequest"
+            examples:
+              commit:
+                summary: Commit reward points
+                value:
+                  CommittedPoints:
+                    - StoreCode: "1"
+                      OrderNumber: "801"
+                      EmailAddress: lucy@test.com
+                      Points: -400
+              reverse:
+                summary: Reverse committed reward points
+                value:
+                  CommittedPoints:
+                    - StoreCode: "1"
+                      OrderNumber: "801"
+                      EmailAddress: lucy@test.com
+                      Points: 400
+      responses:
+        "200":
+          description: Points committed or reversed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /Sale:
+    post:
+      tags:
+        - Sales
+      summary: Insert a sale or cancel committed quantities
+      description: |
+        Inserts sales with billing customer, shipping customer, items, taxes and
+        optional discounts. Customers are located by email address; missing
+        customers are created and changed customer name/address details are
+        updated.
+
+        To cancel all committed quantities associated with an order that will not
+        be processed, send a sale record with the order number, store code and a
+        sale total of `0.00`, as shown in the source document.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleRequest"
+            examples:
+              cancelCommittedQuantities:
+                summary: Cancel all committed quantities for an order
+                value:
+                  Sales:
+                    - SaleDate: "2020-11-19"
+                      OrderNumber: "1008"
+                      StoreCode: "001"
+                      SaleTotal: "0.00"
+              rewardPointsSale:
+                summary: Sale paid partly with reward points
+                value:
+                  Sales:
+                    - SaleDate: "2020-07-30T18:00:00"
+                      OrderNumber: "801"
+                      StoreCode: "1"
+                      OrderComment: Order Comments go here
+                      RewardPointsSpent: 400
+                      CustomerBillTo:
+                        FirstName: Lucy
+                        LastName: Smyth
+                        CompanyName: ""
+                        Address: 13168 Spruce St
+                        City: Toronto
+      responses:
+        "200":
+          description: Sale inserted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    basicAuth:
+      type: http
+      scheme: basic
+
+  parameters:
+    PageSize:
+      name: liPageSize
+      in: query
+      description: Number of records to return per page.
+      schema:
+        type: integer
+        minimum: 1
+    Page:
+      name: liPage
+      in: query
+      description: Page number to return.
+      schema:
+        type: integer
+        minimum: 1
+    FieldList:
+      name: sFieldList
+      in: query
+      description: Comma-separated list of fields to return.
+      schema:
+        type: string
+      example: productCode,longDescription
+    ProductSortKey:
+      name: sSortKey
+      in: query
+      description: Sort column followed by ASC or DESC.
+      schema:
+        type: string
+        pattern: ^(Active|CreationDate|CreationDeviceName|CreationUserName|LastEditDate|LastEditDeviceName|LastEditUserName|LongDescription|Price01|ProductCode|ProductReportingClass|ProductType|ShortDescription|StockControl)(ASC|DESC)$
+      example: productCodeASC
+    WebProductFilter:
+      name: filt_webproduct_bool
+      in: query
+      description: Filter products by Web Product flag.
+      schema:
+        type: boolean
+    ActiveFilter:
+      name: filt_active_bool
+      in: query
+      description: Filter products by Active flag.
+      schema:
+        type: boolean
+    StyleCodeFilter:
+      name: filt_stylecode_str
+      in: query
+      description: Filter products by style code.
+      schema:
+        type: string
+    ProductCode:
+      name: ProductCode
+      in: path
+      required: true
+      schema:
+        type: string
+    StoreCode:
+      name: StoreCode
+      in: path
+      required: true
+      schema:
+        type: string
+    LastEditDate:
+      name: LastEditDate
+      in: path
+      required: true
+      description: UTC date or date/time. Store product calls require 24-hour clock format.
+      schema:
+        type: string
+      examples:
+        dateOnly:
+          value: "2020-11-16"
+        utcDateTime:
+          value: "2020-11-16T13:45:00"
+    CustomerCode:
+      name: CustomerCode
+      in: path
+      required: true
+      description: Customer code, or email address when database lookup is configured that way.
+      schema:
+        type: string
+    EmailAddress:
+      name: EmailAddress
+      in: path
+      required: true
+      schema:
+        type: string
+        format: email
+    OrderNumber:
+      name: OrderNumber
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Error:
+      description: Error response.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    AuthTokenRequest:
+      type: object
+      description: Email/password credential payload if required by the deployment.
+      properties:
+        EmailAddress:
+          type: string
+          format: email
+        Password:
+          type: string
+          format: password
+      additionalProperties: true
+    AuthTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT bearer token.
+        expiresIn:
+          type: integer
+          description: Token lifetime in seconds.
+          example: 7200
+      additionalProperties: true
+    ProductListResponse:
+      oneOf:
+        - type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        - type: object
+          properties:
+            liTotalCount:
+              type: integer
+            Products:
+              type: array
+              items:
+                $ref: "#/components/schemas/Product"
+          additionalProperties: true
+    Product:
+      type: object
+      description: General product data. Field list can vary by `sFieldList`.
+      properties:
+        productCode:
+          type: string
+        longDescription:
+          type: string
+        shortDescription:
+          type: string
+        productSize:
+          type: string
+        productColour:
+          type: string
+        liTotalCount:
+          type: integer
+      additionalProperties: true
+    StoreProductListResponse:
+      oneOf:
+        - type: array
+          items:
+            $ref: "#/components/schemas/StoreProduct"
+        - type: object
+          properties:
+            liTotalCount:
+              type: integer
+            Products:
+              type: array
+              items:
+                $ref: "#/components/schemas/StoreProduct"
+          additionalProperties: true
+    StoreProduct:
+      type: object
+      description: Store-specific product price, cost, quantity, tax and optional quantity-on-order data.
+      properties:
+        StoreCode:
+          type: string
+        ProductCode:
+          type: string
+        Price:
+          type: number
+          format: double
+        Cost:
+          type: number
+          format: double
+        QuantityAvailable:
+          type: number
+          format: double
+        TaxGroup:
+          type: string
+        QuantityOnOrder:
+          type: number
+          format: double
+      additionalProperties: true
+    SerialNumberStatusResponse:
+      oneOf:
+        - type: integer
+          enum:
+            - -1
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+        - type: object
+          properties:
+            Status:
+              type: integer
+              enum:
+                - -1
+                - 0
+                - 1
+                - 2
+                - 3
+                - 4
+                - 5
+          additionalProperties: true
+    Customer:
+      type: object
+      properties:
+        CustomerCode:
+          type: string
+        EmailAddress:
+          type: string
+          format: email
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        CompanyName:
+          type: string
+        Address:
+          type: string
+        City:
+          type: string
+        RewardPoints:
+          type: integer
+      additionalProperties: true
+    GlobalCustomer:
+      type: object
+      properties:
+        EmailAddress:
+          type: string
+          format: email
+        FirstName:
+          type: string
+        LastName:
+          type: string
+      additionalProperties: true
+    StoreListResponse:
+      oneOf:
+        - type: array
+          items:
+            $ref: "#/components/schemas/Store"
+        - type: object
+          properties:
+            Stores:
+              type: array
+              items:
+                $ref: "#/components/schemas/Store"
+            liTotalCount:
+              type: integer
+          additionalProperties: true
+    Store:
+      type: object
+      properties:
+        StoreCode:
+          type: string
+        StoreName:
+          type: string
+      additionalProperties: true
+    CommitQuantityRequest:
+      type: object
+      properties:
+        CommittedQuantities:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommittedQuantity"
+      additionalProperties: true
+    CommitQuantityResponse:
+      type: object
+      properties:
+        CommittedQuantities:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommittedQuantity"
+      additionalProperties: true
+    CommittedQuantity:
+      type: object
+      properties:
+        StoreCode:
+          type: string
+        OrderNumber:
+          type: string
+        ProductCode:
+          type: string
+        Quantity:
+          type: number
+          format: double
+      additionalProperties: true
+    CommitPointsRequest:
+      type: object
+      required:
+        - CommittedPoints
+      properties:
+        CommittedPoints:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommittedPoints"
+    CommittedPoints:
+      type: object
+      required:
+        - StoreCode
+        - OrderNumber
+        - EmailAddress
+        - Points
+      properties:
+        StoreCode:
+          type: string
+        OrderNumber:
+          type: string
+        EmailAddress:
+          type: string
+          format: email
+        Points:
+          type: integer
+          description: Negative values commit points; positive values reverse committed points.
+    SaleRequest:
+      type: object
+      required:
+        - Sales
+      properties:
+        Sales:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sale"
+    Sale:
+      type: object
+      required:
+        - SaleDate
+        - OrderNumber
+        - StoreCode
+      properties:
+        SaleDate:
+          type: string
+          description: Sale date or date/time.
+          example: "2020-07-30T18:00:00"
+        OrderNumber:
+          type: string
+        StoreCode:
+          type: string
+        SaleTotal:
+          oneOf:
+            - type: string
+            - type: number
+              format: double
+        OrderComment:
+          type: string
+        RewardPointsSpent:
+          type: integer
+          description: Omit when no reward points are spent.
+        CustomerBillTo:
+          $ref: "#/components/schemas/Customer"
+        CustomerShipTo:
+          $ref: "#/components/schemas/Customer"
+        Items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleItem"
+        Taxes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleTax"
+        Discounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleDiscount"
+      additionalProperties: true
+    SaleItem:
+      type: object
+      properties:
+        ProductCode:
+          type: string
+        Quantity:
+          type: number
+          format: double
+        Price:
+          type: number
+          format: double
+      additionalProperties: true
+    SaleTax:
+      type: object
+      additionalProperties: true
+    SaleDiscount:
+      type: object
+      additionalProperties: true
+    OperationResponse:
+      type: object
+      additionalProperties: true
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          type: string
+      additionalProperties: true
