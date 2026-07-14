@@ -545,7 +545,7 @@ components:
       description: Sort column followed by ASC or DESC.
       schema:
         type: string
-        pattern: ^(Active|CreationDate|CreationDeviceName|CreationUserName|LastEditDate|LastEditDeviceName|LastEditUserName|LongDescription|Price01|ProductCode|ProductReportingClass|ProductType|ShortDescription|StockControl)(ASC|DESC)$
+        pattern: ^([Aa]ctive|[Cc]reationDate|[Cc]reationDeviceName|[Cc]reationUserName|[Ll]astEditDate|[Ll]astEditDeviceName|[Ll]astEditUserName|[Ll]ongDescription|[Pp]rice01|[Pp]roductCode|[Pp]roductReportingClass|[Pp]roductType|[Ss]hortDescription|[Ss]tockControl)(ASC|DESC)$
       example: productCodeASC
     WebProductFilter:
       name: filt_webproduct_bool
