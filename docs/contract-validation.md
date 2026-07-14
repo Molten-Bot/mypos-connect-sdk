@@ -12,6 +12,20 @@ example, the v1.3 and v1.4 documents describe opposite signs for committing vers
 reversing reward points; the contract retains the v1.4 semantics pending live
 confirmation.
 
+## What the sample export establishes
+
+The v1.3 export is sufficient to model the observed lower-camel response fields
+for general products, store products, customers, global customers, stores, and
+serial-number status. It also establishes the request wrappers `Customers`,
+`GlobalCustomers`, `OrderedQuantities`, `CommittedPoints`, and `Sales`; the known
+sale, refund, cancellation, tax, and singular `Discount` structures; and the fact
+that many request decimals are JSON strings while read-side quantities and prices
+are numbers.
+
+Those observations are encoded without property-name conversion. Unobserved
+response values remain unconstrained, and related operations without their own
+capture are explicitly treated as inferences rather than new evidence.
+
 ## Evidence required before a stable release
 
 Provide sanitized request/response captures or sandbox results for every item
@@ -20,9 +34,11 @@ credentials.
 
 - `POST /auth/token`: Basic-auth behavior, request body, success body, expiry
   representation, and failed-auth response.
-- Product and store-product lists: page termination, complete-field consistency,
-  empty results, and confirmation that the array response and per-item
-  `liTotalCount` shown in the samples are current for every list variant.
+- Product and store-product lists: page termination, empty results, and
+  confirmation that the direct array and per-item `liTotalCount` shown in the
+  samples apply to `/products`, changed-product calls, and every store-product
+  list variant. The exact JSON name and type of the documented cost field also
+  remain unknown.
 - Customer create/get/update and global customers: required and read-only fields,
   not-found behavior, and validation failures.
 - Store list and serial-number status: confirmation that the array envelopes and
@@ -33,8 +49,15 @@ credentials.
   cancellation payloads and responses.
 - Cross-cutting errors: status codes, response bodies, request identifiers,
   rate-limit headers, retry guidance, timeouts, and server failures.
+- Representation rules: decimal precision, currency, rounding, UTC semantics for
+  timestamps that omit an offset, and non-null types for values shown only as
+  `null` in the export.
 - Optional capabilities: behavior when serial numbers or global customers are not
   enabled for a database.
+
+The older spreadsheet also shows global-customer URL variants that omit `/v2` or
+use a `TRSglobalcustomers` prefix. The newer v1.4 path remains authoritative until
+the provider confirms whether those variants are obsolete.
 
 ## How to capture fixtures
 
@@ -50,18 +73,20 @@ credentials.
 
 ## Contract changes after evidence arrives
 
-- Split create/update parameter schemas from response schemas.
-- Mark observed required properties and `readOnly`/`writeOnly` fields.
-- Replace array-or-envelope unions and scalar-or-object unions with the observed
-  shape.
+- Replace `UnverifiedJSONResponse` and the unconstrained `Error` schema with the
+  observed token, mutation, committed-quantity, and failure payloads.
+- Complete customer/global-customer writable fields, casing, requirements, and
+  the truncated global-customer response wrapper.
+- Narrow fields currently unconstrained because every sample value is `null`.
+- Reconcile inferred list variants with their own captures and close response
+  objects only when custom/dynamic fields are ruled out.
 - Configure page-number pagination only after its termination behavior is known.
-- Normalize dates and numeric formats in the schema without transforming JSON at
-  runtime.
-- Keep `additionalProperties: true` only for intentionally extensible or dynamic
-  objects.
-- Add observed error statuses and headers while retaining a safe fallback error.
+- Add verified date, timezone, money, precision, and rounding formats without
+  transforming JSON at runtime.
+- Add observed response statuses, content types, request IDs, and rate-limit
+  headers while retaining a safe fallback error.
 - Keep automatic retries disabled for side-effecting operations unless the API
-  documents idempotency.
+  documents idempotency and duplicate-request behavior.
 
 ## Release criteria
 

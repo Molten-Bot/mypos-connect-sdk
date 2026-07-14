@@ -28,6 +28,20 @@ calls/results are retained in [testing.md](testing.md), for provenance. Newer
 documentation and verified API behavior take precedence over older examples;
 `openapi.yaml` records the reviewed result.
 
+## Installation
+
+After the contract gate clears and the first release is published, install the
+server SDK with your package manager:
+
+```sh
+pnpm add @molten-ai/mypos-connect
+# or: npm install @molten-ai/mypos-connect
+```
+
+The package requires Node.js 22 or newer. It ships ESM and CommonJS entry points,
+uses the runtime's native `fetch`, and does not install a model-validation or JSON
+transformation runtime.
+
 ## Intended runtime
 
 The SDK targets Node.js 22+, server-rendered applications, API routes, and edge
@@ -54,6 +68,11 @@ fallback.
 Never prefix these variables with `NEXT_PUBLIC_`, `VITE_`, or another mechanism
 that embeds values into browser JavaScript.
 
+Passing a constructor value wins over its environment variable. Omitting a value
+allows the SDK to read the environment; omitting `baseURL` as well selects the
+documented production URL. Credentials have no default, and an authenticated
+operation fails instead of silently sending an empty credential.
+
 ```ts
 import MyPOSConnect from '@molten-ai/mypos-connect';
 
@@ -71,20 +90,38 @@ const products = await client.products.list({
 
 ### Obtaining a bearer token
 
-Token acquisition uses HTTP Basic authentication. The SDK deliberately does not
-store the API username/password or refresh the 120-minute JWT automatically;
-downstream code owns that lifecycle.
+Token acquisition uses HTTP Basic authentication. The SDK does not exchange those
+credentials into managed session state or refresh the 120-minute JWT
+automatically; downstream code owns that lifecycle. Use a dedicated, short-lived
+auth client instead of retaining the username/password client in application
+state.
 
 ```ts
 import MyPOSConnect from '@molten-ai/mypos-connect';
 
-const authClient = new MyPOSConnect({
-  baseURL: process.env.MYPOS_CONNECT_BASE_URL,
-  username: process.env.MYPOS_CONNECT_USERNAME,
-  password: process.env.MYPOS_CONNECT_PASSWORD,
-});
+function requireToken(value: unknown): string {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'token' in value &&
+    typeof value.token === 'string'
+  ) {
+    return value.token;
+  }
+  throw new Error('MyPOS Connect returned an unexpected token payload');
+}
 
-const { token } = await authClient.auth.tokens.create();
+async function obtainAccessToken(): Promise<string> {
+  const authClient = new MyPOSConnect({
+    baseURL: process.env.MYPOS_CONNECT_BASE_URL,
+    username: process.env.MYPOS_CONNECT_USERNAME,
+    password: process.env.MYPOS_CONNECT_PASSWORD,
+  });
+
+  return requireToken(await authClient.auth.tokens.create());
+}
+
+const token = await obtainAccessToken();
 
 const client = new MyPOSConnect({
   baseURL: process.env.MYPOS_CONNECT_BASE_URL,
@@ -92,9 +129,9 @@ const client = new MyPOSConnect({
 });
 ```
 
-The exact token payload and response must be confirmed before release. This
-example reflects the current OpenAPI contract rather than a claim about an
-unverified production response.
+The exact token payload and response must be confirmed before release. The small
+guard above keeps that uncertainty explicit; it can be removed once a sanitized
+token response establishes the generated response type.
 
 ## SDK resources
 
@@ -113,8 +150,87 @@ unverified production response.
 
 Automatic retries are limited to safe read operations. Customer creation, sales,
 quantity commitments, and reward-point commitments default to zero retries until
-the API's idempotency behavior is documented. Timeouts, retries, cancellation,
-and an alternate `fetch` implementation remain configurable per request.
+the API's idempotency behavior is documented. Timeouts, retries, and cancellation
+remain configurable per request, while a custom `fetch` implementation can be
+injected into the client for testing or a supported runtime adapter.
+
+The SDK keeps the API's property names exactly as they appear on the wire. That
+includes mixed conventions such as `liPageSize`, `filt_active_bool`, and `Sales`;
+there is no hidden casing conversion in either direction.
+
+## Pagination
+
+MyPOS Connect uses one-based `liPage` and `liPageSize` query parameters. Sample
+responses put the total row count in each item's `liTotalCount` field. Until a
+sandbox capture confirms empty-page and concurrent-update behavior, pagination is
+explicit rather than an automatic iterator:
+
+```ts
+import MyPOSConnect from '@molten-ai/mypos-connect';
+
+const client = new MyPOSConnect();
+
+async function* listAllProducts(pageSize = 100) {
+  for (let liPage = 1; ; liPage += 1) {
+    const products = await client.products.list({ liPage, liPageSize: pageSize });
+    if (products.length === 0) return;
+
+    yield* products;
+
+    const total = products[0]?.liTotalCount;
+    const isLastPage =
+      total === undefined ? products.length < pageSize : liPage * pageSize >= total;
+    if (isLastPage) return;
+  }
+}
+
+for await (const product of listAllProducts()) {
+  console.log(product.productCode);
+}
+```
+
+Always choose a stable `sSortKey` while walking a changing product catalog. If an
+application needs snapshot semantics, coordinate that behavior with the service
+owner rather than assuming page-number pagination provides it.
+
+## Errors, retries, timeouts, and cancellation
+
+Non-2xx responses become typed `APIError` instances containing the HTTP status,
+response headers, and parsed response body when available. Connection failures
+and timeouts use the generated SDK's connection error subclasses. Do not log the
+client, request headers, token body, or raw error object without applying your own
+redaction policy.
+
+```ts
+import MyPOSConnect from '@molten-ai/mypos-connect';
+
+const client = new MyPOSConnect({
+  accessToken: process.env.MYPOS_CONNECT_ACCESS_TOKEN,
+});
+
+const abortController = new AbortController();
+
+try {
+  await client.products.retrieve('PRODUCT / 42', {
+    maxRetries: 1,
+    signal: abortController.signal,
+    timeout: 10_000,
+  });
+} catch (error: unknown) {
+  if (error instanceof MyPOSConnect.APIError) {
+    console.error('MyPOS Connect request failed', {
+      requestID: error.requestID,
+      status: error.status,
+    });
+  }
+  throw error;
+}
+```
+
+GET methods retry twice by default. A per-request override may reduce that count;
+increase it only after considering latency and upstream rate limits. Mutations use
+zero retries because the API has not yet documented idempotency keys or duplicate
+request handling.
 
 ## Framework usage
 
@@ -135,12 +251,62 @@ export async function GET(): Promise<Response> {
 }
 ```
 
+For a Next.js Edge Route Handler, add `export const runtime = 'edge'` and keep the
+same handler body. The client uses Web Platform primitives, so it does not require
+Node.js compatibility mode. Keep the credential in the platform's server-side
+secret store.
+
+Tree-shakable imports let an edge or server bundle include only the resources it
+uses:
+
+```ts
+import { createClient } from '@molten-ai/mypos-connect/tree-shakable';
+import { StoresResource } from '@molten-ai/mypos-connect/resources/stores';
+
+const client = createClient({
+  accessToken: process.env.MYPOS_CONNECT_ACCESS_TOKEN,
+}).withResources({ stores: StoresResource });
+
+const stores = await client.stores.list({ liPageSize: 100, liPage: 1 });
+```
+
 ## Agent discovery
 
 Agents will be able to install `@molten-ai/mypos-connect-mcp` and call its SDK
 documentation-search tool. API code execution is disabled, so the MCP package
 cannot create customers, reserve inventory, or submit sales. The MCP instructions
-link to the exact hosted `openapi.yaml` used for generation.
+and search index are generated from the same `openapi.yaml` and `stainless.yml` as
+the SDK. The release-pinned hosted URL is added during the first custom-code pass,
+after Stainless assigns it.
+
+After publication, stdio-based MCP clients can use this configuration without API
+credentials:
+
+```json
+{
+  "mcpServers": {
+    "mypos-connect": {
+      "command": "npx",
+      "args": ["-y", "@molten-ai/mypos-connect-mcp@latest"]
+    }
+  }
+}
+```
+
+Applications that only need machine-readable discovery can opt into the small
+discovery entry point instead of importing the client runtime:
+
+```ts
+import { OPENAPI_SPEC_URL } from '@molten-ai/mypos-connect/discovery';
+
+const response = await fetch(OPENAPI_SPEC_URL);
+if (!response.ok) throw new Error(`OpenAPI discovery failed: ${response.status}`);
+const openapi = await response.text();
+```
+
+`OPENAPI_SPEC_URL` will be fixed to Stainless's public copy of the exact release
+contract during the first generated-repository custom-code pass. The source copy
+remains available at this repository's `openapi.yaml` in the meantime.
 
 No discovery route is added to `api.myposconnect.com`; this repository does not
 control that service.
@@ -156,13 +322,21 @@ pnpm install --frozen-lockfile
 pnpm validate
 ```
 
-Validation includes OpenAPI linting, contract invariants, documentation checks,
-and a Stainless preview build in CI. Pull requests that change the contract also
-run a breaking-change comparison against `main`.
+Validation includes OpenAPI linting, contract invariants, and documentation
+checks. Pull requests that change the contract also run a breaking-change
+comparison against `main`. After the Stainless project and GitHub App are
+connected, setting `STAINLESS_ENABLED=true` activates the official preview build
+on pull requests and pushes.
 
 Stainless owns generated runtime code in the production SDK repository. Changes
 to generated behavior should begin in `openapi.yaml` or `stainless.yml`; custom
 SDK tests and prose should be isolated as Stainless custom-code commits.
+
+The TypeScript blocks in this pre-release README are compiled against a declaration
+of the intended public surface as part of `pnpm validate`. Once the generated
+repository exists, its CI compiles the examples against the packed SDK itself.
+This guide is also the baseline for its custom README commit; generated API
+reference tables remain generator-owned.
 
 ## Release flow
 
@@ -174,6 +348,15 @@ SDK tests and prose should be isolated as Stainless custom-code commits.
    validated `0.1.0` release and enables trusted OIDC publishing.
 6. Stable `1.0.0` remains blocked until auth, pagination, sales, and error fixtures
    are verified.
+
+The exact hosted activation, custom-code, trusted-publishing, and protection
+sequence is documented in the [SDK launch runbook](docs/launch-runbook.md).
+
+Versions follow semantic versioning. Until `1.0.0`, a minor release may contain a
+breaking correction to an inferred contract; release notes will call it out. At
+and after `1.0.0`, removals, required-field additions, resource renames, and type
+narrowing require a major release. Additive endpoints and optional fields are
+minor releases, while documentation and compatible corrections are patches.
 
 ## Support and security
 

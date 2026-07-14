@@ -25,7 +25,7 @@ env:
   STAINLESS_PROJECT: mypos-connect
   OAS_PATH: openapi.yaml
   CONFIG_PATH: stainless.yml
-  FAIL_ON: error
+  FAIL_ON: warning
 
 jobs:
   build:

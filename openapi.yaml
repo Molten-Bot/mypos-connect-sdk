@@ -43,25 +43,19 @@ paths:
       summary: Get an API token
       description: |
         Authenticate with API user email and password to obtain a JWT bearer
-        token. The source document describes email/password authentication and
-        shows Postman Authorization setup, but does not include the exact body
-        schema from Figure 1; clients may need to provide credentials according
-        to their provisioned API account.
+        token. The API guide documents HTTP Basic authentication and says the
+        token is valid for 120 minutes. The referenced Figure 1 request payload
+        and the token response body are absent from the available source
+        material, so neither body shape is asserted here.
       security:
         - basicAuth: []
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AuthTokenRequest"
       responses:
         "200":
           description: Token returned.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthTokenResponse"
+                $ref: "#/components/schemas/UnverifiedJSONResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -214,7 +208,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StoreProduct"
+                $ref: "#/components/schemas/StoreProductListResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -240,7 +234,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StoreProductListResponse"
+                $ref: "#/components/schemas/StoreProductWithOnOrderListResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -261,7 +255,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StoreProduct"
+                $ref: "#/components/schemas/StoreProductWithOnOrderListResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -307,14 +301,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Customer"
+              $ref: "#/components/schemas/CustomerCreateRequest"
       responses:
         "200":
           description: Customer created.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Customer"
+                $ref: "#/components/schemas/UnverifiedJSONResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -354,14 +348,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Customer"
+              $ref: "#/components/schemas/CustomerUpdateRequest"
       responses:
         "200":
           description: Customer updated.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Customer"
+                $ref: "#/components/schemas/UnverifiedJSONResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -381,7 +375,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GlobalCustomer"
+                $ref: "#/components/schemas/GlobalCustomerListResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -399,14 +393,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GlobalCustomer"
+              $ref: "#/components/schemas/GlobalCustomerUpdateRequest"
       responses:
         "200":
           description: Global customer updated.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GlobalCustomer"
+                $ref: "#/components/schemas/UnverifiedJSONResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -454,7 +448,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OperationResponse"
+                $ref: "#/components/schemas/UnverifiedJSONResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -470,11 +464,13 @@ paths:
         - $ref: "#/components/parameters/OrderNumber"
       responses:
         "200":
-          description: Committed quantities returned.
+          description: |
+            Committed quantities returned. The available guides do not include
+            a response-body sample for this operation.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CommitQuantityResponse"
+                $ref: "#/components/schemas/UnverifiedJSONResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -489,7 +485,12 @@ paths:
       description: |
         Reserve reward points before final sale processing. Send negative
         `Points` values to commit points and positive values to reverse a
-        previous point commitment.
+        previous point commitment, as documented by API guide version 1.4.
+
+        The older sample-call spreadsheet version 1.3 describes the signs in
+        the opposite direction. Version 1.4 is used here because it is newer,
+        but the sign convention still requires provider or live-API
+        confirmation before production use.
       requestBody:
         required: true
         content:
@@ -519,7 +520,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OperationResponse"
+                $ref: "#/components/schemas/UnverifiedJSONResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -570,13 +571,63 @@ paths:
                         CompanyName: ""
                         Address: 13168 Spruce St
                         City: Toronto
+                        Region: Ontario
+                        PostalCode: M4W 1R5
+                        Country: Canada
+                        EmailAddress: lucy@test.com
+                      Items:
+                        - ProductCode: "100010"
+                          Quantity: "1"
+                          Description: Pure-Castile Liquid Soap Lavender
+                          UnitPrice: "10.00"
+                          TaxName: HST
+                          TaxRate: "13.00"
+                          TaxAmount: "1.30"
+                          LineNumber: "1"
+                      Subtotal: "10.00"
+                      Taxes:
+                        - TaxName: HST
+                          TaxRate: "13.00"
+                          TaxTotal: "1.30"
+                      TaxTotal: "1.30"
+                      SaleTotal: "11.30"
+              refund:
+                summary: Refund a sale with a unique order number
+                value:
+                  Sales:
+                    - SaleDate: "2019-08-07T18:00:00"
+                      OrderNumber: 123R
+                      StoreCode: "1"
+                      OrderComment: Order Comments go here
+                      RewardPointsSpent: -400
+                      CustomerBillTo:
+                        FirstName: Lucy
+                        LastName: Smith
+                        EmailAddress: lucy@test.com
+                      Items:
+                        - ProductCode: "100010"
+                          Quantity: "-1"
+                          Description: Pure-Castile Liquid Soap Lavendar
+                          UnitPrice: "10.00"
+                          TaxName: HST
+                          TaxRate: "13.00"
+                          TaxAmount: "-1.30"
+                          LineNumber: "1"
+                          SerialNumber: "123456789"
+                      Subtotal: "-10.00"
+                      Taxes:
+                        - TaxName: HST
+                          TaxRate: "13.00"
+                          TaxTotal: "-1.30"
+                      TaxTotal: "-1.30"
+                      SaleTotal: "-11.30"
       responses:
         "200":
           description: Sale inserted.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OperationResponse"
+                $ref: "#/components/schemas/UnverifiedJSONResponse"
         "4XX":
           $ref: "#/components/responses/ClientError"
         "5XX":
@@ -709,99 +760,407 @@ components:
             $ref: "#/components/schemas/Error"
 
   schemas:
-    AuthTokenRequest:
-      type: object
-      description: Email/password credential payload if required by the deployment.
-      properties:
-        EmailAddress:
-          type: string
-          format: email
-        Password:
-          type: string
-          format: password
-      additionalProperties: true
-    AuthTokenResponse:
-      type: object
-      properties:
-        token:
-          type: string
-          description: JWT bearer token.
-        expiresIn:
-          type: integer
-          description: Token lifetime in seconds.
-          example: 7200
-      additionalProperties: true
+    UnverifiedJSONResponse:
+      description: |
+        JSON response whose shape is not present in the available API guide or
+        sample-call spreadsheet. This schema is intentionally unconstrained
+        until a sanitized capture or sandbox response is available.
+    Error:
+      description: |
+        Error payload shape is not documented by the available source
+        material. Consumers must not depend on particular error properties
+        until sanitized error fixtures have been verified.
+    UnknownJSONValue:
+      description: A value whose non-null JSON type is not established by the samples.
+    UUID:
+      type: string
+      format: uuid
+      readOnly: true
+    NullableUUID:
+      type: string
+      format: uuid
+      nullable: true
+      readOnly: true
+    NullableString:
+      type: string
+      nullable: true
+    TimestampString:
+      type: string
+      description: Timestamp returned without a UTC offset in the supplied samples.
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$'
+      readOnly: true
+      example: "2020-08-25T13:02:16.967"
+    NullableTimestampString:
+      type: string
+      nullable: true
+      description: Timestamp returned without a UTC offset, or null.
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?$'
+      readOnly: true
+    SaleDateString:
+      type: string
+      description: Date, or date and 24-hour time, as accepted by the sale API.
+      pattern: '^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?)?$'
+      example: "2019-08-07T18:00:00"
+    DecimalString:
+      type: string
+      description: Decimal value represented as a JSON string by the sample calls.
+      pattern: '^-?(?:\d+(?:\.\d+)?|\.\d+)$'
+      example: "10.00"
+
     ProductListResponse:
-      oneOf:
-        - type: array
-          items:
-            $ref: "#/components/schemas/Product"
-        - type: object
-          properties:
-            liTotalCount:
-              type: integer
-            Products:
-              type: array
-              items:
-                $ref: "#/components/schemas/Product"
-          additionalProperties: true
+      type: array
+      description: |
+        Product collection. Pagination metadata is returned on each product as
+        `customSortRowNumber` and `liTotalCount` in the supplied list sample.
+      items:
+        $ref: "#/components/schemas/Product"
+      example:
+        - customSortRowNumber: 1
+          liTotalCount: 2
+          productId: D0D6ADBE-7974-4C3E-9C22-3489789C8D39
+          productCode: STYLE02
+          longDescription: STYLE 02
+          productSize: XS
+          styleCode: STY001
+          productColour: GREEN
+          active: true
     Product:
       type: object
-      description: General product data. Field list can vary by `sFieldList`.
+      description: |
+        General/static product data. The properties returned can be narrowed by
+        `sFieldList`, and installations may expose additional fields; known
+        sample fields are typed while additional response fields remain open.
       properties:
+        customSortRowNumber:
+          type: integer
+          readOnly: true
+          description: One-based record position in a list response.
+        liTotalCount:
+          type: integer
+          readOnly: true
+          description: Total records matching the request, repeated on list items.
+        productId:
+          $ref: "#/components/schemas/UUID"
         productCode:
+          type: string
+          readOnly: true
+        shortDescription:
           type: string
         longDescription:
           type: string
-        shortDescription:
+        buttonText:
+          type: string
+          description: Casing returned by the single-product sample.
+        buttontext:
+          type: string
+          description: Casing returned by the style-list sample.
+        brand:
+          type: string
+        fullDescription:
+          type: string
+        barcode:
           type: string
         productSize:
           type: string
+        styleCode:
+          type: string
+        styleDescription:
+          type: string
         productColour:
           type: string
-        liTotalCount:
+        productType:
+          type: string
+          description: Product type code documented by the sample-call spreadsheet.
+          enum:
+            - A
+            - B
+            - E
+            - H
+            - K
+            - M
+            - Q
+            - S
+            - U
+            - W
+            - Z
+        rewardPoints:
           type: integer
-      additionalProperties: true
-    StoreProductListResponse:
-      oneOf:
-        - type: array
+          description: Additional reward points associated with the product.
+        allowDiscounts:
+          type: boolean
+        productNotes:
+          type: string
+        stockControl:
+          type: string
+        active:
+          type: boolean
+        binLocation:
+          type: string
+        imageFilename:
+          type: string
+        productClass1:
+          $ref: "#/components/schemas/NullableString"
+        productClass2:
+          $ref: "#/components/schemas/NullableString"
+        productClass3:
+          $ref: "#/components/schemas/NullableString"
+        productClass4:
+          $ref: "#/components/schemas/NullableString"
+        supplierName:
+          type: string
+        productTitle:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        productWeight:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        webHoldback:
+          type: number
+          format: double
+        webOrders:
+          type: boolean
+        lastModified:
+          $ref: "#/components/schemas/NullableTimestampString"
+        unpackedFrom:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        packedInto:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        otherProductClasses:
+          type: array
           items:
-            $ref: "#/components/schemas/StoreProduct"
-        - type: object
-          properties:
-            liTotalCount:
-              type: integer
-            Products:
-              type: array
-              items:
-                $ref: "#/components/schemas/StoreProduct"
-          additionalProperties: true
+            type: string
+        cC_001:
+          $ref: "#/components/schemas/NullableString"
+        cC_002:
+          $ref: "#/components/schemas/NullableString"
+        cC_003:
+          $ref: "#/components/schemas/NullableString"
+        cC_004:
+          $ref: "#/components/schemas/NullableString"
+        cC_005:
+          $ref: "#/components/schemas/NullableString"
+        cC_006:
+          $ref: "#/components/schemas/NullableString"
+        cC_007:
+          $ref: "#/components/schemas/NullableString"
+        cC_008:
+          $ref: "#/components/schemas/NullableString"
+        cC_009:
+          $ref: "#/components/schemas/NullableString"
+        cC_010:
+          $ref: "#/components/schemas/NullableString"
+        lastEditUser:
+          type: string
+          readOnly: true
+        creationUser:
+          type: string
+          readOnly: true
+        lastEditDevice:
+          type: string
+          readOnly: true
+        creationDevice:
+          type: string
+          readOnly: true
+        lastEditDate:
+          $ref: "#/components/schemas/TimestampString"
+        creationDate:
+          $ref: "#/components/schemas/TimestampString"
+      additionalProperties: true
+      example:
+        productId: 93f9153b-9aa4-4f09-a5ca-12a5f25afe55
+        productCode: "100010"
+        shortDescription: Pure-Castile Liquid
+        longDescription: Pure-Castile Liquid Soap Lavendar
+        buttonText: Pure-Castile Liquid Soap Lavendar
+        brand: Dr. Bronner
+        barcode: "100010"
+        styleCode: "1000"
+        productType: S
+        rewardPoints: 0
+        allowDiscounts: true
+        stockControl: Y
+        active: true
+        productClass1: Cleaning Supplies
+        productClass2: Soap
+        webHoldback: 0
+        webOrders: false
+        otherProductClasses:
+          - Environmentally Friendly
+          - Natural
+        lastEditDate: "2020-08-25T13:02:16.967"
+        creationDate: "2020-08-25T13:02:16.96"
+
+    StoreProductListResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/StoreProduct"
+      example:
+        - customSortRowNumber: 1
+          liTotalCount: 1
+          storeCode: "1"
+          productCode: "100010"
+          quantity: 0
+          webPrice: 20
+          price01: 20
+          price02: 0
+          price03: 0
+          price04: 0
+          price05: 0
+          price06: 0
+          price07: 0
+          price08: 0
+          price09: 0
+          price10: 0
+          taxGroup: Sales Tax
+          saleEnabled1: false
+          salePrice1: null
+          saleStartDate1: null
+          saleEndDate1: null
+          saleEnabled2: false
+          salePrice2: null
+          saleStartDate2: null
+          saleEndDate2: null
+          webHoldback: 0
     StoreProduct:
       type: object
-      description: Store-specific product price, cost, quantity, tax and optional quantity-on-order data.
+      description: |
+        Store-specific quantity, price, tax and sale data. The guide also says
+        changed-product responses include cost, but the cost property name and
+        value are absent from the supplied JSON sample and are not invented here.
       properties:
-        StoreCode:
+        customSortRowNumber:
+          type: integer
+          readOnly: true
+        liTotalCount:
+          type: integer
+          readOnly: true
+        storeCode:
           type: string
-        ProductCode:
+        productCode:
           type: string
-        Price:
+        quantity:
           type: number
           format: double
-        Cost:
+        webPrice:
           type: number
           format: double
-        QuantityAvailable:
+          deprecated: true
+          description: Backward-compatible alias for `price01`.
+        price01:
           type: number
           format: double
-        TaxGroup:
+        price02:
+          type: number
+          format: double
+        price03:
+          type: number
+          format: double
+        price04:
+          type: number
+          format: double
+        price05:
+          type: number
+          format: double
+        price06:
+          type: number
+          format: double
+        price07:
+          type: number
+          format: double
+        price08:
+          type: number
+          format: double
+        price09:
+          type: number
+          format: double
+        price10:
+          type: number
+          format: double
+        taxGroup:
           type: string
-        QuantityOnOrder:
+        saleEnabled1:
+          type: boolean
+        salePrice1:
+          type: number
+          format: double
+          nullable: true
+        saleStartDate1:
+          type: string
+          nullable: true
+        saleEndDate1:
+          type: string
+          nullable: true
+        saleEnabled2:
+          type: boolean
+        salePrice2:
+          type: number
+          format: double
+          nullable: true
+        saleStartDate2:
+          type: string
+          nullable: true
+        saleEndDate2:
+          type: string
+          nullable: true
+        webHoldback:
           type: number
           format: double
       additionalProperties: true
+    StoreProductWithOnOrderListResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/StoreProductWithOnOrder"
+      example:
+        - customSortRowNumber: 1
+          liTotalCount: 1
+          storeCode: "001"
+          productCode: "100010"
+          quantity: 4
+          webPrice: 20
+          price01: 20
+          price02: 0
+          price03: 0
+          price04: 0
+          price05: 0
+          price06: 0
+          price07: 0
+          price08: 0
+          price09: 0
+          price10: 0
+          taxGroup: Sales Tax
+          saleEnabled1: false
+          salePrice1: null
+          saleStartDate1: null
+          saleEndDate1: null
+          saleEnabled2: false
+          salePrice2: null
+          saleStartDate2: null
+          saleEndDate2: null
+          quantityOnOrder: 0
+          webHoldback: 0
+    StoreProductWithOnOrder:
+      allOf:
+        - $ref: "#/components/schemas/StoreProduct"
+        - type: object
+          required:
+            - quantityOnOrder
+          properties:
+            quantityOnOrder:
+              type: number
+              format: double
+
     SerialNumberStatusResponse:
-      oneOf:
-        - type: integer
+      type: array
+      items:
+        $ref: "#/components/schemas/SerialNumberStatus"
+      example:
+        - serialNumberStatus: 0
+    SerialNumberStatus:
+      type: object
+      required:
+        - serialNumberStatus
+      properties:
+        serialNumberStatus:
+          type: integer
+          readOnly: true
           enum:
             - -1
             - 0
@@ -810,102 +1169,585 @@ components:
             - 3
             - 4
             - 5
-        - type: object
-          properties:
-            Status:
-              type: integer
-              enum:
-                - -1
-                - 0
-                - 1
-                - 2
-                - 3
-                - 4
-                - 5
-          additionalProperties: true
+      additionalProperties: false
+
     Customer:
       type: object
+      description: Single-database customer response using upstream lower-camel-case names.
       properties:
-        CustomerCode:
+        customerId:
+          $ref: "#/components/schemas/UUID"
+        customerCode:
           type: string
-        EmailAddress:
+          readOnly: true
+          description: Assigned by MyPOS Connect; it cannot be supplied when creating a customer.
+        customerName:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        phoneNumber:
+          type: string
+        faxNumber:
+          type: string
+        emailAddress:
           type: string
           format: email
-        FirstName:
+        webSite:
           type: string
+        creditLimit:
+          type: number
+          format: double
+        notes:
+          type: string
+        active:
+          type: boolean
+        customerType:
+          type: string
+        rewardsCollector:
+          type: boolean
+        rewardsNumber:
+          type: string
+        rewardsValue:
+          type: number
+          format: double
+          description: Total customer reward-points value returned by the API.
+        firstSaledate:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        lastSaledate:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        allowMailing:
+          type: boolean
+        allowDataShare:
+          type: boolean
+        firstName:
+          type: string
+        lastName:
+          type: string
+        bankSortCode:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        bankAccount:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        bankAccountName:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        correspondenceEmail:
+          type: boolean
+        correspondencePaper:
+          type: boolean
+        discountPercent:
+          type: number
+          format: double
+        priceBand:
+          type: integer
+        balance:
+          type: number
+          format: double
+        cC_001:
+          $ref: "#/components/schemas/NullableString"
+        cC_002:
+          $ref: "#/components/schemas/NullableString"
+        cC_003:
+          $ref: "#/components/schemas/NullableString"
+        cC_004:
+          $ref: "#/components/schemas/NullableString"
+        cC_005:
+          $ref: "#/components/schemas/NullableString"
+        cC_006:
+          $ref: "#/components/schemas/NullableString"
+        cC_007:
+          $ref: "#/components/schemas/NullableString"
+        cC_008:
+          $ref: "#/components/schemas/NullableString"
+        cC_009:
+          $ref: "#/components/schemas/NullableString"
+        cC_010:
+          $ref: "#/components/schemas/NullableString"
+        lastEditUser:
+          type: string
+          readOnly: true
+        creationUser:
+          type: string
+          readOnly: true
+        lastEditDevice:
+          type: string
+          readOnly: true
+        creationDevice:
+          type: string
+          readOnly: true
+        lastEditDate:
+          $ref: "#/components/schemas/TimestampString"
+        creationDate:
+          $ref: "#/components/schemas/TimestampString"
+      additionalProperties: true
+      example:
+        customerId: f092097a-82a8-41a3-9a61-48cf174de612
+        customerCode: "1000070"
+        customerName: ""
+        address: 13168 Spruce St
+        city: Toronto
+        region: Ontario
+        postalCode: M4W 1R5
+        country: Canada
+        phoneNumber: (416) 877-6000
+        faxNumber: (416) 877-6000
+        emailAddress: lucy@test.com
+        webSite: ""
+        creditLimit: 0
+        notes: ""
+        active: true
+        customerType: Adult
+        rewardsCollector: false
+        rewardsNumber: ""
+        rewardsValue: 65
+        firstSaledate: null
+        lastSaledate: null
+        allowMailing: true
+        allowDataShare: false
+        firstName: Lucy
+        lastName: Smyth
+        correspondenceEmail: false
+        correspondencePaper: false
+        discountPercent: 0
+        priceBand: 1
+        balance: 0
+        lastEditDate: "2020-08-21T12:47:18.177"
+        creationDate: "2020-07-28T12:31:47.417"
+    CustomerCreateRequest:
+      type: object
+      required:
+        - Customers
+      properties:
+        Customers:
+          type: array
+          minItems: 1
+          writeOnly: true
+          items:
+            $ref: "#/components/schemas/CustomerCreateInput"
+      additionalProperties: false
+      example:
+        Customers:
+          - customerName: Test Company Name
+            firstName: Charlie
+            lastName: Brown
+            address: 550 Parkside Drive Unit B9
+            city: Waterloo
+            region: ON
+            postalCode: N2L 5V4
+            country: Canada
+            phoneNumber: 519-578-8667
+            faxNumber: 519-578-0176
+            emailAddress: CharlieBrown@email.com
+            webSite: ""
+            rewardsCollector: true
+            allowMailing: true
+            allowDataShare: true
+            discountPercent: 10
+            notes: ""
+    CustomerCreateInput:
+      type: object
+      required:
+        - emailAddress
+      properties:
+        customerName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        phoneNumber:
+          type: string
+        faxNumber:
+          type: string
+        emailAddress:
+          type: string
+          format: email
+        webSite:
+          type: string
+        rewardsCollector:
+          type: boolean
+        allowMailing:
+          type: boolean
+        allowDataShare:
+          type: boolean
+        discountPercent:
+          type: number
+          format: double
+        notes:
+          type: string
+      additionalProperties: false
+    CustomerUpdateRequest:
+      type: object
+      required:
+        - Customers
+      properties:
+        Customers:
+          type: array
+          minItems: 1
+          writeOnly: true
+          items:
+            $ref: "#/components/schemas/CustomerUpdateInput"
+      additionalProperties: false
+      example:
+        Customers:
+          - LastName: Brown
+            Region: NY
+    CustomerUpdateInput:
+      type: object
+      description: |
+        Partial customer update. The spreadsheet demonstrates `LastName` and
+        `Region` with this casing and says other available fields must be
+        discovered from a customer GET response, so unverified update fields
+        remain open rather than being normalized or invented.
+      properties:
         LastName:
           type: string
-        CompanyName:
+        Region:
           type: string
-        Address:
-          type: string
-        City:
-          type: string
-        RewardPoints:
-          type: integer
+      additionalProperties: true
+
+    GlobalCustomerListResponse:
+      type: array
+      description: |
+        Wrapper shown by the global-customer spreadsheet sample. That sample is
+        truncated immediately after `value`, so possible wrapper metadata is
+        intentionally left open.
+      items:
+        $ref: "#/components/schemas/GlobalCustomerResponseEnvelope"
+      example:
+        - value:
+            - active: true
+              companyName: ""
+              address: 550 Parkside Drive Unit B9
+              city: Waterloo
+              region: Ontario
+              postalCode: N2L 5V4
+              country: ""
+              phoneNumber: ""
+              mobileNumber: "5195788667"
+              emailAddress: email@email.com
+              rewardsValue: 656
+              firstName: Heidi
+              lastName: Stieh
+              totalGlobalSpend: 656
+              creationDate: "2018-11-20T11:50:34.727"
+              creationDateUTC: "2018-11-20T16:50:30.61"
+              lastEditDate: "2019-06-11T09:42:41.873"
+              lastEditDateUTC: "2019-06-11T14:00:00.473"
+    GlobalCustomerResponseEnvelope:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/GlobalCustomer"
       additionalProperties: true
     GlobalCustomer:
       type: object
       properties:
-        EmailAddress:
+        active:
+          type: boolean
+        companyName:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        phoneNumber:
+          type: string
+        mobileNumber:
+          type: string
+        emailAddress:
           type: string
           format: email
-        FirstName:
+        rewardsValue:
+          type: number
+          format: double
+        firstName:
           type: string
-        LastName:
+        lastName:
+          type: string
+        totalGlobalSpend:
+          type: number
+          format: double
+        creationDate:
+          $ref: "#/components/schemas/TimestampString"
+        creationDateUTC:
+          $ref: "#/components/schemas/TimestampString"
+        lastEditDate:
+          $ref: "#/components/schemas/TimestampString"
+        lastEditDateUTC:
+          $ref: "#/components/schemas/TimestampString"
+      additionalProperties: true
+    GlobalCustomerUpdateRequest:
+      type: object
+      required:
+        - GlobalCustomers
+      properties:
+        GlobalCustomers:
+          type: array
+          minItems: 1
+          writeOnly: true
+          items:
+            $ref: "#/components/schemas/GlobalCustomerUpdateInput"
+      additionalProperties: false
+      example:
+        GlobalCustomers:
+          - PhoneNumber: 416-578-8667
+            firstName: Charlie
+            lastName: Brown
+            Region: ON
+            FaxNumber: ""
+    GlobalCustomerUpdateInput:
+      type: object
+      description: |
+        Partial global-customer update. Only the fields and casing shown in the
+        spreadsheet are named; the guide says the supported update set is
+        limited but does not enumerate it.
+      properties:
+        PhoneNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        Region:
+          type: string
+        FaxNumber:
           type: string
       additionalProperties: true
+
     StoreListResponse:
-      oneOf:
-        - type: array
+      type: array
+      items:
+        $ref: "#/components/schemas/StoreResponseEnvelope"
+      example:
+        - value:
+            - storeId: 25c60b77-80f7-4772-8ef1-75b308cd2e4c
+              storeCode: "1"
+              storeName: "Green Daisy #101"
+              address: 550 Parkside Drive Unit B9
+              city: Waterloo
+              region: ON
+              postalCode: N2L 5E7
+              country: Canada
+              phoneNumber: 1-877-877-4767
+              faxNumber: ""
+              emailAddress: store1@greendaisy.com
+              webSite: www.greendaisy.com
+              taxRateId: 3402d8fd-6362-e311-bb77-d4ae52b94eec
+              vatTaxRateId: 3402d8fd-6362-e311-bb77-d4ae52b94eec
+              currencyId: 955322d7-dcd8-4b2e-9a5d-f88865bab7f0
+              priceListId: null
+              active: true
+              zoneAreaId: 209f8915-1679-47fa-83ec-48a1f94ac8e1
+              lastEditDate: "2018-07-25T11:52:19.533"
+              creationDate: "2014-03-10T08:08:13.633"
+              creationDateUTC: null
+              lastEditDateUTC: "2018-07-25T15:52:19.53"
+              visibilityId: null
+          formatters: []
+          contentTypes: []
+          declaredType: null
+          statusCode: 200
+    StoreResponseEnvelope:
+      type: object
+      required:
+        - value
+        - statusCode
+      properties:
+        value:
+          type: array
+          readOnly: true
           items:
             $ref: "#/components/schemas/Store"
-        - type: object
-          properties:
-            Stores:
-              type: array
-              items:
-                $ref: "#/components/schemas/Store"
-            liTotalCount:
-              type: integer
-          additionalProperties: true
+        formatters:
+          type: array
+          readOnly: true
+          items: {}
+        contentTypes:
+          type: array
+          readOnly: true
+          items: {}
+        declaredType:
+          $ref: "#/components/schemas/UnknownJSONValue"
+        statusCode:
+          type: integer
+          readOnly: true
+      additionalProperties: true
     Store:
       type: object
       properties:
-        StoreCode:
+        storeId:
+          $ref: "#/components/schemas/UUID"
+        storeCode:
           type: string
-        StoreName:
+          readOnly: true
+        storeName:
           type: string
+        address:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        phoneNumber:
+          type: string
+        faxNumber:
+          type: string
+        emailAddress:
+          type: string
+          format: email
+        webSite:
+          type: string
+        taxRateId:
+          $ref: "#/components/schemas/UUID"
+        vatTaxRateId:
+          $ref: "#/components/schemas/UUID"
+        currencyId:
+          $ref: "#/components/schemas/UUID"
+        priceListId:
+          $ref: "#/components/schemas/NullableUUID"
+        active:
+          type: boolean
+        zoneAreaId:
+          $ref: "#/components/schemas/NullableUUID"
+        cC_001:
+          $ref: "#/components/schemas/NullableString"
+        cC_002:
+          $ref: "#/components/schemas/NullableString"
+        cC_003:
+          $ref: "#/components/schemas/NullableString"
+        cC_004:
+          $ref: "#/components/schemas/NullableString"
+        cC_005:
+          $ref: "#/components/schemas/NullableString"
+        cC_006:
+          $ref: "#/components/schemas/NullableString"
+        cC_007:
+          $ref: "#/components/schemas/NullableString"
+        cC_008:
+          $ref: "#/components/schemas/NullableString"
+        cC_009:
+          $ref: "#/components/schemas/NullableString"
+        cC_010:
+          $ref: "#/components/schemas/NullableString"
+        lastEditUser:
+          type: string
+          readOnly: true
+        creationUser:
+          type: string
+          readOnly: true
+        lastEditDevice:
+          type: string
+          readOnly: true
+        creationDevice:
+          type: string
+          readOnly: true
+        lastEditDate:
+          $ref: "#/components/schemas/TimestampString"
+        creationDate:
+          $ref: "#/components/schemas/TimestampString"
+        creationDateUTC:
+          $ref: "#/components/schemas/NullableTimestampString"
+        lastEditDateUTC:
+          $ref: "#/components/schemas/NullableTimestampString"
+        visibilityId:
+          $ref: "#/components/schemas/UnknownJSONValue"
       additionalProperties: true
+
     CommitQuantityRequest:
       type: object
+      required:
+        - OrderedQuantities
       properties:
-        CommittedQuantities:
+        OrderedQuantities:
           type: array
+          minItems: 1
+          writeOnly: true
           items:
-            $ref: "#/components/schemas/CommittedQuantity"
-      additionalProperties: true
-    CommitQuantityResponse:
+            $ref: "#/components/schemas/CommittedQuantityOrder"
+      additionalProperties: false
+      example:
+        OrderedQuantities:
+          - StoreCode: "1"
+            OrderNumber: "135"
+            Items:
+              - ProductCode: "100010"
+                Quantity: "1"
+                LineNumber: "1"
+              - ProductCode: "100010"
+                Quantity: "2"
+                LineNumber: "2"
+          - StoreCode: "1"
+            OrderNumber: "136"
+            Items:
+              - ProductCode: "100014"
+                Quantity: "1"
+                LineNumber: "1"
+    CommittedQuantityOrder:
       type: object
-      properties:
-        CommittedQuantities:
-          type: array
-          items:
-            $ref: "#/components/schemas/CommittedQuantity"
-      additionalProperties: true
-    CommittedQuantity:
-      type: object
+      required:
+        - StoreCode
+        - OrderNumber
+        - Items
       properties:
         StoreCode:
           type: string
         OrderNumber:
           type: string
+        Items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CommittedQuantityItem"
+      additionalProperties: false
+    CommittedQuantityItem:
+      type: object
+      required:
+        - ProductCode
+        - Quantity
+        - LineNumber
+      properties:
         ProductCode:
           type: string
         Quantity:
-          type: number
-          format: double
-      additionalProperties: true
+          allOf:
+            - $ref: "#/components/schemas/DecimalString"
+          description: Positive values commit stock; negative values reverse it.
+        LineNumber:
+          type: string
+      additionalProperties: false
+
     CommitPointsRequest:
       type: object
       required:
@@ -913,8 +1755,11 @@ components:
       properties:
         CommittedPoints:
           type: array
+          minItems: 1
+          writeOnly: true
           items:
             $ref: "#/components/schemas/CommittedPoints"
+      additionalProperties: false
     CommittedPoints:
       type: object
       required:
@@ -932,7 +1777,12 @@ components:
           format: email
         Points:
           type: integer
-          description: Negative values commit points; positive values reverse committed points.
+          description: |
+            Negative values commit points and positive values reverse committed
+            points according to guide version 1.4. Spreadsheet version 1.3
+            conflicts with this direction; provider confirmation is pending.
+      additionalProperties: false
+
     SaleRequest:
       type: object
       required:
@@ -940,76 +1790,163 @@ components:
       properties:
         Sales:
           type: array
+          minItems: 1
+          writeOnly: true
           items:
             $ref: "#/components/schemas/Sale"
+      additionalProperties: false
     Sale:
       type: object
       required:
         - SaleDate
         - OrderNumber
         - StoreCode
+        - SaleTotal
       properties:
         SaleDate:
-          type: string
-          description: Sale date or date/time.
-          example: "2020-07-30T18:00:00"
+          $ref: "#/components/schemas/SaleDateString"
         OrderNumber:
           type: string
+          description: Must be unique; refunds require a new order number.
         StoreCode:
           type: string
         SaleTotal:
-          oneOf:
-            - type: string
-            - type: number
-              format: double
+          allOf:
+            - $ref: "#/components/schemas/DecimalString"
+          description: Use `0.00` with only the identifying fields to cancel committed quantities.
         OrderComment:
           type: string
         RewardPointsSpent:
           type: integer
-          description: Omit when no reward points are spent.
+          description: Omit when unused; use a negative value when refunding spent points.
         CustomerBillTo:
-          $ref: "#/components/schemas/Customer"
+          $ref: "#/components/schemas/SaleBillingCustomer"
         CustomerShipTo:
-          $ref: "#/components/schemas/Customer"
+          $ref: "#/components/schemas/SaleCustomer"
         Items:
           type: array
+          minItems: 1
           items:
             $ref: "#/components/schemas/SaleItem"
+        Subtotal:
+          $ref: "#/components/schemas/DecimalString"
+        Discount:
+          $ref: "#/components/schemas/SaleDiscount"
         Taxes:
           type: array
           items:
             $ref: "#/components/schemas/SaleTax"
-        Discounts:
-          type: array
-          items:
-            $ref: "#/components/schemas/SaleDiscount"
-      additionalProperties: true
+        TaxTotal:
+          $ref: "#/components/schemas/DecimalString"
+      additionalProperties: false
+    SaleCustomer:
+      type: object
+      properties:
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        CompanyName:
+          type: string
+        Address:
+          type: string
+        City:
+          type: string
+        Region:
+          type: string
+        Country:
+          type: string
+        PostalCode:
+          type: string
+        PhoneNumber:
+          type: string
+        FaxNumber:
+          type: string
+        EmailAddress:
+          type: string
+          format: email
+        EmailVerified:
+          type: string
+          description: String flag shown as `1` by the supplied sale samples.
+        OKToEmail:
+          type: string
+          description: String flag shown as `1` by the supplied sale samples.
+      additionalProperties: false
+    SaleBillingCustomer:
+      allOf:
+        - $ref: "#/components/schemas/SaleCustomer"
+        - type: object
+          required:
+            - EmailAddress
+          description: Billing customer; the API locates or creates this customer by email.
     SaleItem:
       type: object
+      required:
+        - ProductCode
+        - Quantity
+        - Description
+        - UnitPrice
+        - TaxName
+        - TaxRate
+        - TaxAmount
+        - LineNumber
       properties:
         ProductCode:
           type: string
         Quantity:
-          type: number
-          format: double
-        Price:
-          type: number
-          format: double
-      additionalProperties: true
+          allOf:
+            - $ref: "#/components/schemas/DecimalString"
+          description: Use a negative quantity for a refund.
+        Description:
+          type: string
+        UnitPrice:
+          allOf:
+            - $ref: "#/components/schemas/DecimalString"
+          description: Discounted unit price when a line discount applies.
+        TaxName:
+          type: string
+          description: Non-taxable items use `NONE`.
+        TaxRate:
+          $ref: "#/components/schemas/DecimalString"
+        TaxAmount:
+          allOf:
+            - $ref: "#/components/schemas/DecimalString"
+          description: Unrounded line tax; use a negative value for a refund.
+        LineNumber:
+          type: string
+        SerialNumber:
+          type: string
+          description: Optional product serial number.
+      additionalProperties: false
     SaleTax:
       type: object
-      additionalProperties: true
+      required:
+        - TaxName
+        - TaxRate
+        - TaxTotal
+      properties:
+        TaxName:
+          type: string
+        TaxRate:
+          $ref: "#/components/schemas/DecimalString"
+        TaxTotal:
+          allOf:
+            - $ref: "#/components/schemas/DecimalString"
+          description: Rounded tax total; use a negative value for a refund.
+      additionalProperties: false
     SaleDiscount:
       type: object
-      additionalProperties: true
-    OperationResponse:
-      type: object
-      additionalProperties: true
-    Error:
-      type: object
+      description: Sale-level discount that acts like a payment and does not change tax.
+      required:
+        - Amount
+        - Name
       properties:
-        message:
+        Amount:
+          type: number
+          format: double
+        Name:
           type: string
-        error:
-          type: string
-      additionalProperties: true
+      additionalProperties: false
+      example:
+        Amount: -1
+        Name: General Discount
