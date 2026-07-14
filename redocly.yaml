@@ -1,0 +1,17 @@
+apis:
+  mypos-connect@v2:
+    root: ./openapi.yaml
+
+extends:
+  - recommended
+
+rules:
+  no-ambiguous-paths: error
+  no-server-example.com: error
+  no-unresolved-refs: error
+  operation-4xx-response: error
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-operationId-url-safe: error
+  security-defined: error
+  spec-strict-refs: error
