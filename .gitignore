@@ -1,0 +1,27 @@
+# Dependencies and package-manager state
+node_modules/
+.pnpm-store/
+
+# Build, test, and validation output
+coverage/
+dist/
+build/
+.cache/
+.tmp/
+reports/
+*.tgz
+
+# Local Stainless CLI workspace and generated previews
+.stainless/
+mypos-connect-typescript/
+
+# Logs and local runtime configuration
+*.log
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/

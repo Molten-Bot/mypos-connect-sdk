@@ -1,0 +1,265 @@
+# yaml-language-server: $schema=https://app.stainless.com/config.schema.json
+
+edition: 2026-05-06
+
+organization:
+  name: molten ai
+  github_org: Molten-Bot
+  upload_spec: true
+
+settings:
+  license: MIT
+  per_endpoint_security: true
+
+environments:
+  production: https://api.myposconnect.com/api/v2
+
+client_settings:
+  default_client_name: MyPOSConnect
+  default_client_example_name: client
+  default_env_prefix: MYPOS_CONNECT
+  # New endpoints are non-retrying until their idempotency is explicitly reviewed.
+  default_retries:
+    max_retries: 0
+    initial_delay_seconds: 0.5
+    max_delay_seconds: 8
+  opts:
+    access_token:
+      type: string
+      nullable: true
+      description: JWT used to authenticate business API requests.
+      read_env: MYPOS_CONNECT_ACCESS_TOKEN
+      auth:
+        security_scheme: bearerAuth
+      required_in_tests: true
+    username:
+      type: string
+      nullable: true
+      description: API username used only to obtain a JWT.
+      read_env: MYPOS_CONNECT_USERNAME
+      auth:
+        security_scheme: basicAuth
+        role: username
+      required_in_tests: true
+    password:
+      type: string
+      nullable: true
+      description: API password used only to obtain a JWT.
+      read_env: MYPOS_CONNECT_PASSWORD
+      auth:
+        security_scheme: basicAuth
+        role: password
+      required_in_tests: true
+
+resources:
+  auth:
+    description: Authentication operations.
+    subresources:
+      tokens:
+        description: JWT access tokens.
+        methods:
+          create:
+            type: http
+            endpoint: post /auth/token
+            default_request_options:
+              max_retries: 0
+
+  products:
+    description: General and store-specific product data.
+    methods:
+      list:
+        type: http
+        endpoint: get /naproducts
+        default_request_options:
+          max_retries: 2
+      retrieve:
+        type: http
+        endpoint: get /naproducts/{ProductCode}
+        default_request_options:
+          max_retries: 2
+      list_changed:
+        type: http
+        endpoint: get /naproducts/~{LastEditDate}
+        default_request_options:
+          max_retries: 2
+      list_alternate:
+        type: http
+        endpoint: get /products
+        default_request_options:
+          max_retries: 2
+    subresources:
+      store_data:
+        description: Store-level pricing, cost, inventory, tax, and on-order data.
+        methods:
+          list_changed:
+            type: http
+            endpoint: get /productspq/~{StoreCode}~{LastEditDate}
+            default_request_options:
+              max_retries: 2
+          retrieve:
+            type: http
+            endpoint: get /productspq/{StoreCode}~{ProductCode}
+            default_request_options:
+              max_retries: 2
+          list_changed_with_on_order:
+            type: http
+            endpoint: get /productspqo/~{StoreCode}~{LastEditDate}
+            default_request_options:
+              max_retries: 2
+          retrieve_with_on_order:
+            type: http
+            endpoint: get /productspqo/{StoreCode}~{ProductCode}
+            default_request_options:
+              max_retries: 2
+      serial_numbers:
+        description: Product serial-number availability and lifecycle status.
+        methods:
+          retrieve_status:
+            type: http
+            endpoint: get /ProductSerial/{StoreCode}~{ProductCode}~{SerialNumber}
+            default_request_options:
+              max_retries: 2
+
+  customers:
+    description: Local and global customer records.
+    methods:
+      create:
+        type: http
+        endpoint: post /naCustomers
+        default_request_options:
+          max_retries: 0
+      retrieve:
+        type: http
+        endpoint: get /naCustomers/{CustomerCode}
+        default_request_options:
+          max_retries: 2
+      update:
+        type: http
+        endpoint: put /naCustomers/{CustomerCode}
+        default_request_options:
+          max_retries: 0
+    subresources:
+      global:
+        description: Customer records shared across stores.
+        methods:
+          retrieve:
+            type: http
+            endpoint: get /globalcustomers/{EmailAddress}
+            default_request_options:
+              max_retries: 2
+          update:
+            type: http
+            endpoint: put /globalcustomers/{EmailAddress}
+            default_request_options:
+              max_retries: 0
+
+  stores:
+    description: Store discovery.
+    methods:
+      list:
+        type: http
+        endpoint: get /Stores
+        default_request_options:
+          max_retries: 2
+
+  inventory:
+    description: Inventory reservations for web orders.
+    subresources:
+      commitments:
+        description: Committed product quantities.
+        methods:
+          create:
+            type: http
+            endpoint: post /CommitQty
+            default_request_options:
+              max_retries: 0
+          retrieve:
+            type: http
+            endpoint: get /CommitQty/{OrderNumber}
+            default_request_options:
+              max_retries: 2
+
+  rewards:
+    description: Customer rewards operations.
+    subresources:
+      commitments:
+        description: Reward-point commitments and reversals.
+        methods:
+          create:
+            type: http
+            endpoint: post /CommitPts
+            default_request_options:
+              max_retries: 0
+
+  sales:
+    description: Sales submission and committed-quantity cancellation.
+    methods:
+      create:
+        type: http
+        endpoint: post /Sale
+        default_request_options:
+          max_retries: 0
+
+readme:
+  example_requests:
+    default:
+      type: request
+      endpoint: get /naproducts
+      params:
+        liPageSize: 50
+        liPage: 1
+    headline:
+      type: request
+      endpoint: post /auth/token
+      params: {}
+    errors:
+      type: request
+      endpoint: get /naproducts
+      params: {}
+    retries:
+      type: request
+      endpoint: get /naproducts
+      params: {}
+    timeouts:
+      type: request
+      endpoint: get /naproducts
+      params: {}
+    raw_response:
+      type: request
+      endpoint: get /naproducts
+      params: {}
+
+openapi:
+  code_samples:
+    stainless: true
+    x-codeSamples: true
+  code_sample_languages:
+    typescript: true
+    curl: true
+
+targets:
+  typescript:
+    edition: typescript.2025-10-10
+    package_name: "@molten-ai/mypos-connect"
+    readme_title: MyPOS Connect TypeScript SDK
+    production_repo: Molten-Bot/mypos-connect-typescript
+    publish:
+      npm:
+        auth_method: oidc
+        release_environment: npm-release
+    options:
+      package_manager: pnpm
+      enable_treeshaking: true
+      browser:
+        state: disallow
+        message: >-
+          MyPOS Connect credentials are confidential. Use this SDK from a server,
+          API route, BFF, SSR runtime, or edge worker instead of browser code.
+      mcp_server:
+        package_name: "@molten-ai/mypos-connect-mcp"
+        enable_code_tool: false
+        enable_docs_tool: true
+        generate_cloudflare_worker: false
+        instructions: >-
+          Search the MyPOS Connect SDK documentation to learn how to integrate the
+          API. This server is documentation-only and cannot execute API requests.
