@@ -1,9 +1,16 @@
 # Contract validation and release gate
 
-`openapi.yaml` was derived from the MyPOS Connect API V2 document version 1.4.
-That document references a sample-calls spreadsheet and figures that are not in
-this repository. Several schemas therefore describe the safest known envelope
-rather than a verified production wire contract.
+`openapi.yaml` was derived from the MyPOS Connect API V2 document version 1.4 and
+the v1.3 sample-call export in [`testing.md`](../testing.md). The sample material
+provides concrete request bodies and selected GET results, but not authentication,
+mutation success responses, or representative failures. Some schemas therefore
+remain the safest known envelope rather than a verified production wire contract.
+
+When sources disagree, the newer v1.4 documentation wins unless a sanitized live
+capture or an API-provider clarification establishes current behavior. For
+example, the v1.3 and v1.4 documents describe opposite signs for committing versus
+reversing reward points; the contract retains the v1.4 semantics pending live
+confirmation.
 
 ## Evidence required before a stable release
 
@@ -13,13 +20,13 @@ credentials.
 
 - `POST /auth/token`: Basic-auth behavior, request body, success body, expiry
   representation, and failed-auth response.
-- Product and store-product lists: bare-array versus object envelope,
-  `liTotalCount`, page termination, field names/casing, dates, monetary values,
-  quantity types, and empty results.
+- Product and store-product lists: page termination, complete-field consistency,
+  empty results, and confirmation that the array response and per-item
+  `liTotalCount` shown in the samples are current for every list variant.
 - Customer create/get/update and global customers: required and read-only fields,
   not-found behavior, and validation failures.
-- Store list and serial-number status: actual response envelopes and scalar versus
-  object serial status.
+- Store list and serial-number status: confirmation that the array envelopes and
+  serial status fields shown in v1.3 remain current.
 - Quantity and point commitments: complete request/response fields, sign
   semantics, validation failures, and duplicate-request behavior.
 - Sales: complete bill-to/ship-to, item, tax, discount, totals, reward-point, and

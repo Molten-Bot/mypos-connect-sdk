@@ -3,9 +3,10 @@
 This repository is the source of truth for the MyPOS Connect OpenAPI contract and
 the Stainless configuration used to generate the TypeScript SDK.
 
-The generated packages are intentionally **not published yet**. The source API
-document omits several wire-level details, so the first public release is gated on
-sanitized API fixtures or sandbox responses. See
+The generated packages are intentionally **not published yet**. The API notes and
+sample-call export establish much of the request surface, but still omit important
+authentication, success-response, and error details. The first public release is
+therefore gated on sanitized API fixtures or sandbox responses. See
 [Contract validation](docs/contract-validation.md) for the outstanding evidence.
 
 ## Generated artifacts
@@ -22,8 +23,10 @@ this repository:
   documentation.
 
 The source contract is available at [openapi.yaml](openapi.yaml). The extracted
-upstream API notes are retained in [sdk.md](sdk.md) for provenance; when the two
-disagree, verified API behavior and `openapi.yaml` take precedence.
+upstream API notes are retained in [sdk.md](sdk.md), and the supplied v1.3 sample
+calls/results are retained in [testing.md](testing.md), for provenance. Newer
+documentation and verified API behavior take precedence over older examples;
+`openapi.yaml` records the reviewed result.
 
 ## Intended runtime
 
