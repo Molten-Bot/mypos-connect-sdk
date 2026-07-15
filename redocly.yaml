@@ -3,7 +3,7 @@ apis:
     root: ./openapi.yaml
 
 extends:
-  - recommended
+  - recommended-strict
 
 rules:
   no-ambiguous-paths: error
