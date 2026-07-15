@@ -240,7 +240,7 @@ openapi:
 targets:
   typescript:
     edition: typescript.2025-10-10
-    package_name: "@molten-ai/mypos-connect"
+    package_name: "@molten-ai/mypos-connect-sdk"
     readme_title: MyPOS Connect TypeScript SDK
     production_repo: Molten-Bot/mypos-connect-typescript
     publish:

@@ -5,10 +5,16 @@ import test from 'node:test';
 import { parse } from 'yaml';
 
 const contractPath = new URL('../openapi.yaml', import.meta.url);
+const packageManifestPath = new URL('../package.json', import.meta.url);
+const publishWorkflowPath = new URL('../.github/workflows/publish-npm.yml', import.meta.url);
 const stainlessConfigPath = new URL('../stainless.yml', import.meta.url);
 const source = await readFile(contractPath, 'utf8');
+const packageManifestSource = await readFile(packageManifestPath, 'utf8');
+const publishWorkflowSource = await readFile(publishWorkflowPath, 'utf8');
 const stainlessSource = await readFile(stainlessConfigPath, 'utf8');
 const contract = parse(source);
+const packageManifest = JSON.parse(packageManifestSource);
+const publishWorkflow = parse(publishWorkflowSource);
 const stainless = parse(stainlessSource);
 
 const HTTP_METHODS = new Set([
@@ -231,7 +237,8 @@ test('Stainless generation and package settings preserve the approved release bo
 
   const target = stainless.targets?.typescript;
   assert.equal(target?.edition, 'typescript.2025-10-10');
-  assert.equal(target?.package_name, '@molten-ai/mypos-connect');
+  assert.equal(target?.package_name, '@molten-ai/mypos-connect-sdk');
+  assert.equal(target?.package_name, packageManifest.name);
   assert.equal(target?.production_repo, 'Molten-Bot/mypos-connect-typescript');
   assert.deepEqual(target?.publish?.npm, {
     auth_method: 'oidc',
@@ -249,6 +256,26 @@ test('Stainless generation and package settings preserve the approved release bo
   assert.equal(mcp?.generate_cloudflare_worker, false);
   assert.match(mcp?.instructions ?? '', /documentation-only/i);
   assert.match(mcp?.instructions ?? '', /cannot execute API requests/i);
+});
+
+test('the npm release workflow preserves the trusted publishing boundary', () => {
+  assert.equal(packageManifest.private, undefined);
+  assert.equal(packageManifest.publishConfig?.access, 'public');
+  assert.deepEqual(publishWorkflow.on?.release?.types, ['published']);
+  assert.equal(publishWorkflow.permissions?.contents, 'read');
+  assert.equal(publishWorkflow.permissions?.['id-token'], 'write');
+
+  const publishJob = publishWorkflow.jobs?.publish;
+  assert.equal(publishJob?.['runs-on'], 'ubuntu-24.04');
+  assert.equal(publishJob?.environment, 'npm-release');
+
+  const setupNode = publishJob?.steps?.find((step) => step.name === 'Set up Node.js and npm registry');
+  assert.equal(setupNode?.with?.['node-version'], 24);
+  assert.equal(setupNode?.with?.['registry-url'], 'https://registry.npmjs.org');
+  assert.equal(setupNode?.with?.['package-manager-cache'], false);
+
+  const publishStep = publishJob?.steps?.find((step) => step.name === 'Publish package');
+  assert.equal(publishStep?.run, 'npm publish --access public --provenance');
 });
 
 test('Stainless reads every credential from the approved downstream environment variable', () => {
