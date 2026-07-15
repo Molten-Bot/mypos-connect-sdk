@@ -8,6 +8,7 @@ organization:
   upload_spec: true
 
 settings:
+  # This applies to generated SDK code, not the third-party API described by OAS.
   license: MIT
   per_endpoint_security: true
 

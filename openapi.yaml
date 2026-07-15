@@ -1,22 +1,22 @@
 openapi: 3.0.3
 info:
-  title: MyPOS Connect API
+  title: Unofficial MyPOS Connect API description
   version: "2.0"
   contact:
-    name: MyPOS Connect Support
+    name: MyPOS Connect service support (third party)
     email: support@tricityretail.com
-  license:
-    name: MIT
-    url: https://opensource.org/license/mit/
   description: |
-    OpenAPI description derived from "MyPOS Connect API V2" document version 1.4.
+    Unofficial, independently maintained OpenAPI description derived from the
+    "MyPOS Connect API V2" document version 1.4. This repository does not
+    operate, own, or license the MyPOS Connect API, and this description is not
+    represented as an official specification from the service owner.
 
     The API uses JWT bearer tokens for most calls. Tokens are obtained from
     `POST /auth/token` and are valid for 120 minutes. All POST and PUT request
     bodies are JSON.
 servers:
   - url: https://api.myposconnect.com/api/v2
-    description: Production
+    description: Third-party production endpoint
 tags:
   - name: Auth
     description: Authenticate API users and obtain short-lived JWT bearer tokens.

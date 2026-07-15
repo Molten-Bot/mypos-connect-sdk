@@ -1,10 +1,13 @@
 # Contract validation and release gate
 
-`openapi.yaml` was derived from the MyPOS Connect API V2 document version 1.4 and
-the v1.3 sample-call export in [`testing.md`](../testing.md). The sample material
-provides concrete request bodies and selected GET results, but not authentication,
-mutation success responses, or representative failures. Some schemas therefore
-remain the safest known envelope rather than a verified production wire contract.
+`openapi.yaml` is an unofficial, independently maintained description derived
+from the MyPOS Connect API V2 document version 1.4 and the v1.3 sample-call export
+in [`testing.md`](../testing.md). This repository does not operate or own the API,
+and the description is not represented as an official provider specification.
+The sample material provides concrete request bodies and selected GET results,
+but not authentication, mutation success responses, or representative failures.
+Some schemas therefore remain the safest known envelope rather than a verified
+production wire contract.
 
 When sources disagree, the newer v1.4 documentation wins unless a sanitized live
 capture or an API-provider clarification establishes current behavior. For
