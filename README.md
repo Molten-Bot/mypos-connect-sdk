@@ -1,7 +1,9 @@
-# MyPOS Connect TypeScript SDK
+# Unofficial MyPOS Connect TypeScript SDK
 
-This repository is the source of truth for the MyPOS Connect OpenAPI contract and
-the Stainless configuration used to generate the TypeScript SDK.
+This repository maintains an independently authored OpenAPI description and the
+Stainless configuration used to generate a TypeScript client for the third-party
+MyPOS Connect API. It is not an official MyPOS Connect repository, does not
+operate the API, and does not claim ownership of the service or its specification.
 
 The generated packages are intentionally **not published yet**. The API notes and
 sample-call export establish much of the request surface, but still omit important
@@ -19,10 +21,10 @@ this repository:
   coding agents.
 - `Molten-Bot/mypos-connect-typescript` — the generated SDK production
   repository.
-- A stable, public copy of the validated OpenAPI contract and model-optimized SDK
+- A stable, public copy of the reviewed OpenAPI description and model-optimized SDK
   documentation.
 
-The source contract is available at [openapi.yaml](openapi.yaml). The extracted
+The API description is available at [openapi.yaml](openapi.yaml). The extracted
 upstream API notes are retained in [sdk.md](sdk.md), and the supplied v1.3 sample
 calls/results are retained in [testing.md](testing.md), for provenance. Newer
 documentation and verified API behavior take precedence over older examples;
@@ -352,6 +354,10 @@ After the Stainless project and GitHub App are activated:
 6. Stable `1.0.0` remains blocked until auth, pagination, sales, and error fixtures
    are verified.
 
+This source repository is private to npm and has no npm-publish workflow. Only
+the generated package from `Molten-Bot/mypos-connect-typescript` may be published
+as `@molten-ai/mypos-connect-sdk`.
+
 The exact hosted activation, custom-code, trusted-publishing, and protection
 sequence is documented in the [SDK launch runbook](docs/launch-runbook.md).
 
@@ -372,6 +378,8 @@ or real order data in an issue or fixture. Contributions should follow
 
 ## License
 
-The SDK source is available under the [MIT License](LICENSE). MyPOS Connect is a
-third-party service; this license does not grant rights to its trademarks or API
-data.
+Original material in this repository is available under the
+[MIT License](LICENSE). MyPOS Connect is a third-party service; that license does
+not license the service, the provider's documentation, trademarks, API behavior,
+or API data. The `info` object in `openapi.yaml` intentionally makes no API-license
+assertion.

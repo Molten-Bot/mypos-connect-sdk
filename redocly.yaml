@@ -6,6 +6,9 @@ extends:
   - recommended-strict
 
 rules:
+  # The service owner has not supplied license terms for the exposed API.
+  # A repository or SDK license must not be represented as the API's license.
+  info-license: off
   no-ambiguous-paths: error
   no-server-example.com: error
   no-unresolved-refs: error

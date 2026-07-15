@@ -1,4 +1,4 @@
-name: Validate source contract
+name: Validate API description
 
 on:
   pull_request:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   validate:
-    name: OpenAPI, invariants, and documentation
+    name: OpenAPI description, invariants, and documentation
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -40,7 +40,7 @@ jobs:
         run: pnpm validate
 
   breaking-changes:
-    name: OpenAPI breaking changes
+    name: OpenAPI description breaking changes
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -50,7 +50,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Compare OpenAPI contract with main
+      - name: Compare OpenAPI description with main
         uses: oasdiff/oasdiff-action/breaking@024f6c399f9a21ada1addb0f9a36ce1bfac995f1 # v0.1.6
         with:
           base: origin/main:openapi.yaml

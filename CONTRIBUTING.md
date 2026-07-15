@@ -1,7 +1,9 @@
 # Contributing
 
-This repository owns the MyPOS Connect API contract and Stainless configuration.
-The generated TypeScript runtime lives in a separate production repository.
+This repository maintains an unofficial description of the third-party MyPOS
+Connect API and the Stainless configuration used to generate a client. It does
+not own or operate the API. The generated TypeScript runtime lives in a separate
+production repository.
 
 ## Before opening a pull request
 

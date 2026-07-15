@@ -1,9 +1,13 @@
 # SDK launch runbook
 
 This runbook covers the one-time hosted setup that cannot be completed from the
-contract repository alone. It is intentionally ordered so that no package can be
-published before the contract evidence in
+API-description repository alone. It is intentionally ordered so that no package
+can be published before the contract evidence in
 [`contract-validation.md`](contract-validation.md) is accepted.
+
+The source repository `Molten-Bot/mypos-connect-sdk` must remain private to npm.
+All npm publication happens from the generated production repository
+`Molten-Bot/mypos-connect-typescript`.
 
 ## 1. Connect Stainless
 
@@ -75,25 +79,36 @@ exist before it can be selected.
 
 ## 4. Bootstrap npm and trusted publishing
 
-1. From the reviewed generated `main`, run the full CI suite and `npm pack` for
-   both `@molten-ai/mypos-connect-sdk` and `@molten-ai/mypos-connect-mcp`.
-2. Inspect both tarball manifests. Dispatch a one-time, approval-protected
-   GitHub-hosted bootstrap workflow with `id-token: write` and a short-lived,
-   package-scoped npm automation token. Publish version `0.1.0` with
-   `npm publish --provenance --access public`; a local publish cannot produce the
-   required GitHub Actions provenance statement.
-3. In npm, configure each package's trusted publisher for GitHub organization
+1. In `Molten-Bot/mypos-connect-typescript`, review and merge the Stainless
+   release pull request to generated `main`. Do not publish from this source
+   repository.
+2. Clone the generated repository at the reviewed release commit, then run its
+   full CI suite, `pnpm install`, and `pnpm build`.
+3. Change into the generated repository's `dist` directory. Confirm that
+   `npm pkg get name version repository` identifies
+   `@molten-ai/mypos-connect-sdk`, the intended first version, and
+   `Molten-Bot/mypos-connect-typescript`.
+4. Run `npm pack --dry-run` and inspect the manifest. It must contain the built
+   ESM/CommonJS client and declarations, and must not contain this source
+   repository's tests, workflows, or API-source notes.
+5. Authenticate interactively with `npm login`, then bootstrap the package with
+   `pnpm publish --access public`. npm requires the package to exist before a
+   trusted publisher can be configured.
+6. In npm, configure the package's trusted publisher for GitHub organization
    `Molten-Bot`, repository `mypos-connect-typescript`, workflow
-   `publish-npm.yml`, environment `npm-release`, and the allowed npm-publish
-   GitHub Actions workflow action.
-4. Create the approval-protected GitHub environment `npm-release` and restrict it
-   to the generated repository's protected `main` branch.
-5. Delete the bootstrap workflow, revoke and remove its npm token, and verify that
-   neither remains in GitHub configuration. Subsequent releases must use OIDC and
-   provenance only.
+   `publish-npm.yml`, environment `npm-release`, and allowed action `npm publish`.
+7. In the generated GitHub repository, create the approval-protected environment
+   `npm-release`. Verify its release workflow uses a GitHub-hosted runner, Node
+   22.14 or newer, npm 11.5.1 or newer, and `id-token: write`.
+8. Run the next patch release through the generated repository's Stainless
+   release PR and `publish-npm.yml`. Confirm npm shows provenance from
+   `Molten-Bot/mypos-connect-typescript`, then set npm publishing access to
+   require 2FA and disallow traditional tokens.
+9. Delete the misplaced `NPM_TOKEN` secret from the source repository and revoke
+   any bootstrap token that is no longer required.
 
-Never publish with `--ignore-scripts`, from an unreviewed `next` branch, or while
-the contract gate is open.
+Never publish from `Molten-Bot/mypos-connect-sdk`, with `--ignore-scripts`, from
+an unreviewed generated `next` branch, or while the contract gate is open.
 
 ## 5. Protect both repositories
 
