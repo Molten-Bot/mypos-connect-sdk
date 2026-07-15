@@ -1,10 +1,20 @@
 {
-  "name": "@molten-ai/mypos-connect-contract",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@molten-ai/mypos-connect-sdk",
+  "version": "0.0.1",
   "description": "Source contract and validation tooling for the MyPOS Connect SDK",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Molten-Bot/mypos-connect-sdk.git"
+  },
+  "homepage": "https://github.com/Molten-Bot/mypos-connect-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/Molten-Bot/mypos-connect-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=22.12.0"
   },

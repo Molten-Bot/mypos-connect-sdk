@@ -2,7 +2,7 @@ declare const process: {
   readonly env: Readonly<Record<string, string | undefined>>;
 };
 
-declare module '@molten-ai/mypos-connect' {
+declare module '@molten-ai/mypos-connect-sdk' {
   export interface MyPOSConnectOptions {
     baseURL?: string;
     accessToken?: string;
@@ -61,8 +61,8 @@ declare module '@molten-ai/mypos-connect' {
   }
 }
 
-declare module '@molten-ai/mypos-connect/tree-shakable' {
-  import type { MyPOSConnectOptions } from '@molten-ai/mypos-connect';
+declare module '@molten-ai/mypos-connect-sdk/tree-shakable' {
+  import type { MyPOSConnectOptions } from '@molten-ai/mypos-connect-sdk';
 
   interface PartialClient {
     withResources<T>(resources: T): T extends { stores: unknown }
@@ -77,10 +77,10 @@ declare module '@molten-ai/mypos-connect/tree-shakable' {
   export function createClient(options?: MyPOSConnectOptions): PartialClient;
 }
 
-declare module '@molten-ai/mypos-connect/resources/stores' {
+declare module '@molten-ai/mypos-connect-sdk/resources/stores' {
   export class StoresResource {}
 }
 
-declare module '@molten-ai/mypos-connect/discovery' {
+declare module '@molten-ai/mypos-connect-sdk/discovery' {
   export const OPENAPI_SPEC_URL: string;
 }

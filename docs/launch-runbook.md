@@ -76,7 +76,7 @@ exist before it can be selected.
 ## 4. Bootstrap npm and trusted publishing
 
 1. From the reviewed generated `main`, run the full CI suite and `npm pack` for
-   both `@molten-ai/mypos-connect` and `@molten-ai/mypos-connect-mcp`.
+   both `@molten-ai/mypos-connect-sdk` and `@molten-ai/mypos-connect-mcp`.
 2. Inspect both tarball manifests. Dispatch a one-time, approval-protected
    GitHub-hosted bootstrap workflow with `id-token: write` and a short-lived,
    package-scoped npm automation token. Publish version `0.1.0` with

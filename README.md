@@ -14,7 +14,7 @@ therefore gated on sanitized API fixtures or sandbox responses. See
 Once the release gate is satisfied, Stainless will maintain these artifacts from
 this repository:
 
-- `@molten-ai/mypos-connect` — the server-side TypeScript SDK.
+- `@molten-ai/mypos-connect-sdk` — the server-side TypeScript SDK.
 - `@molten-ai/mypos-connect-mcp` — a documentation-search-only MCP server for
   coding agents.
 - `Molten-Bot/mypos-connect-typescript` — the generated SDK production
@@ -34,8 +34,8 @@ After the contract gate clears and the first release is published, install the
 server SDK with your package manager:
 
 ```sh
-pnpm add @molten-ai/mypos-connect
-# or: npm install @molten-ai/mypos-connect
+pnpm add @molten-ai/mypos-connect-sdk
+# or: npm install @molten-ai/mypos-connect-sdk
 ```
 
 The package requires Node.js 22 or newer. It ships ESM and CommonJS entry points,
@@ -75,7 +75,7 @@ generated-client tests must confirm that a missing endpoint credential fails
 before any network request instead of sending an empty authorization header.
 
 ```ts
-import MyPOSConnect from '@molten-ai/mypos-connect';
+import MyPOSConnect from '@molten-ai/mypos-connect-sdk';
 
 const client = new MyPOSConnect({
   baseURL: process.env.MYPOS_CONNECT_BASE_URL,
@@ -98,7 +98,7 @@ auth client instead of retaining the username/password client in application
 state.
 
 ```ts
-import MyPOSConnect from '@molten-ai/mypos-connect';
+import MyPOSConnect from '@molten-ai/mypos-connect-sdk';
 
 function requireToken(value: unknown): string {
   if (
@@ -167,7 +167,7 @@ sandbox capture confirms empty-page and concurrent-update behavior, pagination i
 explicit rather than an automatic iterator:
 
 ```ts
-import MyPOSConnect from '@molten-ai/mypos-connect';
+import MyPOSConnect from '@molten-ai/mypos-connect-sdk';
 
 const client = new MyPOSConnect();
 
@@ -203,7 +203,7 @@ client, request headers, token body, or raw error object without applying your o
 redaction policy.
 
 ```ts
-import MyPOSConnect from '@molten-ai/mypos-connect';
+import MyPOSConnect from '@molten-ai/mypos-connect-sdk';
 
 const client = new MyPOSConnect({
   accessToken: process.env.MYPOS_CONNECT_ACCESS_TOKEN,
@@ -240,7 +240,7 @@ action, worker, or backend service. A browser should call that boundary instead 
 calling MyPOS Connect directly.
 
 ```ts
-import MyPOSConnect from '@molten-ai/mypos-connect';
+import MyPOSConnect from '@molten-ai/mypos-connect-sdk';
 
 export async function GET(): Promise<Response> {
   const client = new MyPOSConnect({
@@ -261,8 +261,8 @@ Tree-shakable imports let an edge or server bundle include only the resources it
 uses:
 
 ```ts
-import { createClient } from '@molten-ai/mypos-connect/tree-shakable';
-import { StoresResource } from '@molten-ai/mypos-connect/resources/stores';
+import { createClient } from '@molten-ai/mypos-connect-sdk/tree-shakable';
+import { StoresResource } from '@molten-ai/mypos-connect-sdk/resources/stores';
 
 const client = createClient({
   accessToken: process.env.MYPOS_CONNECT_ACCESS_TOKEN,
@@ -298,7 +298,7 @@ Applications that only need machine-readable discovery can opt into the small
 discovery entry point instead of importing the client runtime:
 
 ```ts
-import { OPENAPI_SPEC_URL } from '@molten-ai/mypos-connect/discovery';
+import { OPENAPI_SPEC_URL } from '@molten-ai/mypos-connect-sdk/discovery';
 
 const response = await fetch(OPENAPI_SPEC_URL);
 if (!response.ok) throw new Error(`OpenAPI discovery failed: ${response.status}`);
