@@ -11,9 +11,13 @@ published before the contract evidence in
 2. Install the Stainless GitHub App for `Molten-Bot/mypos-connect-sdk` and the
    production repository `Molten-Bot/mypos-connect-typescript`.
 3. Point the project at `openapi.yaml` and `stainless.yml` from this repository.
-4. Set the source-repository variable `STAINLESS_ENABLED` to `true`.
-5. Manually run **Build Stainless SDKs** and require a build with no warnings.
-6. Confirm that the generated repository's integrated branch is `next` and that
+4. Enable the project's public SDK documentation-search API; the docs-only MCP
+   package cannot start successfully without it.
+5. Set the source-repository variable `STAINLESS_ENABLED` to `true`.
+6. Manually run **Build Stainless SDKs** and require a build with no warnings.
+7. Record and verify Stainless's stable public URL for the exact uploaded input
+   spec, then add it to the MCP instructions and `./discovery` custom export.
+8. Confirm that the generated repository's integrated branch is `next` and that
    release pull requests target `main`.
 
 Do not add a long-lived Stainless API token when GitHub App/OIDC authentication is
@@ -30,7 +34,8 @@ rejected while Node.js, Next.js Edge, and a worker build succeed.
 Keep these additions as conventional custom-code commits on `next` so Stainless
 replays them after regeneration:
 
-- the human README prose and compiled examples from this repository;
+- the human README prose from this repository, with every example compiled
+  against the packed generated SDK rather than the source declaration fixture;
 - a generated-package `engines.node` requirement for Node.js 22 or newer;
 - a `./discovery` export containing only `OPENAPI_SPEC_URL`, fixed to the public
   Stainless copy of the release's exact OpenAPI input;
@@ -46,6 +51,10 @@ type checking, build, generated-code consistency, Jest, and all package checks.
 Coverage thresholds for statements, branches, functions, and lines are 100% over
 shipped SDK and MCP runtime code. Only declarations, tests, build scripts, and
 generated documentation may be excluded.
+
+The handwritten declaration in this source repository checks pre-release example
+syntax only. Do not copy it into the generated repository or use it to satisfy the
+consumer/typecheck gate.
 
 Record the minified tree-shaken bundle containing one resource as the baseline.
 Reject later increases greater than 10% unless a reviewed pull request updates
@@ -68,15 +77,20 @@ exist before it can be selected.
 
 1. From the reviewed generated `main`, run the full CI suite and `npm pack` for
    both `@molten-ai/mypos-connect` and `@molten-ai/mypos-connect-mcp`.
-2. Inspect both tarball manifests, then manually publish version `0.1.0` with
-   provenance using a maintainer account that has the `@molten-ai` scope.
+2. Inspect both tarball manifests. Dispatch a one-time, approval-protected
+   GitHub-hosted bootstrap workflow with `id-token: write` and a short-lived,
+   package-scoped npm automation token. Publish version `0.1.0` with
+   `npm publish --provenance --access public`; a local publish cannot produce the
+   required GitHub Actions provenance statement.
 3. In npm, configure each package's trusted publisher for GitHub organization
    `Molten-Bot`, repository `mypos-connect-typescript`, workflow
-   `publish-npm.yml`, and environment `npm-release`.
+   `publish-npm.yml`, environment `npm-release`, and the allowed npm-publish
+   GitHub Actions workflow action.
 4. Create the approval-protected GitHub environment `npm-release` and restrict it
    to the generated repository's protected `main` branch.
-5. Remove any bootstrap npm token from local and GitHub configuration. Subsequent
-   releases must use OIDC and provenance only.
+5. Delete the bootstrap workflow, revoke and remove its npm token, and verify that
+   neither remains in GitHub configuration. Subsequent releases must use OIDC and
+   provenance only.
 
 Never publish with `--ignore-scripts`, from an unreviewed `next` branch, or while
 the contract gate is open.

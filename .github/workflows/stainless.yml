@@ -3,17 +3,9 @@ name: Build Stainless SDKs
 on:
   pull_request:
     branches: [main]
-    paths:
-      - openapi.yaml
-      - stainless.yml
-      - .github/workflows/stainless.yml
     types: [opened, synchronize, reopened]
   push:
     branches: [main]
-    paths:
-      - openapi.yaml
-      - stainless.yml
-      - .github/workflows/stainless.yml
   workflow_dispatch:
 
 concurrency:

@@ -70,8 +70,9 @@ that embeds values into browser JavaScript.
 
 Passing a constructor value wins over its environment variable. Omitting a value
 allows the SDK to read the environment; omitting `baseURL` as well selects the
-documented production URL. Credentials have no default, and an authenticated
-operation fails instead of silently sending an empty credential.
+documented production URL. Credentials have no default. Before release, the
+generated-client tests must confirm that a missing endpoint credential fails
+before any network request instead of sending an empty authorization header.
 
 ```ts
 import MyPOSConnect from '@molten-ai/mypos-connect';
@@ -339,6 +340,8 @@ This guide is also the baseline for its custom README commit; generated API
 reference tables remain generator-owned.
 
 ## Release flow
+
+After the Stainless project and GitHub App are activated:
 
 1. A pull request validates the contract and previews the generated SDK.
 2. Merging to this repository's `main` updates Stainless.
