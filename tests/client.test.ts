@@ -512,9 +512,7 @@ describe('configuration and authentication', () => {
     const fake = createFakeFetch();
     const client = createClient(fake.fetch);
 
-    await expect(invoke(client)).rejects.toThrow(
-      'instead of overriding Authorization',
-    );
+    expect(() => invoke(client)).toThrow('instead of overriding Authorization');
     expect(fake.fetchMock).not.toHaveBeenCalled();
   });
 
@@ -548,8 +546,8 @@ describe('request options and failures', () => {
     const client = createClient(fake.fetch);
     const controller = new AbortController();
 
-    await client.products.list(
-      {},
+    await client.customers.create(
+      customerCreateBody,
       {
         headers: { 'X-Correlation-ID': 'correlation-123' },
         signal: controller.signal,

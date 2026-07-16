@@ -2,9 +2,14 @@ import MyPOSConnectDefault, {
   MyPOSConnect,
   type AuthTokensCreateResponse,
   type Customer,
+  type CustomersCreateResponse,
+  type CustomersGlobalUpdateResponse,
+  type CustomersUpdateResponse,
+  type Error as MyPOSConnectErrorBody,
   type GlobalCustomerListResponse,
   type InventoryCommitmentsCreateResponse,
   type InventoryCommitmentsRetrieveResponse,
+  type Product,
   type ProductListResponse,
   type RewardsCommitmentsCreateResponse,
   type SaleRequestWritable,
@@ -23,6 +28,15 @@ type IsExactlyUnknown<T> = IsAny<T> extends true
 type Expect<T extends true> = T;
 
 type _TokenResponseRemainsUnknown = Expect<IsExactlyUnknown<AuthTokensCreateResponse>>;
+type _CustomerCreateResponseRemainsUnknown = Expect<
+  IsExactlyUnknown<CustomersCreateResponse>
+>;
+type _CustomerUpdateResponseRemainsUnknown = Expect<
+  IsExactlyUnknown<CustomersUpdateResponse>
+>;
+type _GlobalCustomerUpdateResponseRemainsUnknown = Expect<
+  IsExactlyUnknown<CustomersGlobalUpdateResponse>
+>;
 type _InventoryCreateResponseRemainsUnknown = Expect<
   IsExactlyUnknown<InventoryCommitmentsCreateResponse>
 >;
@@ -33,6 +47,7 @@ type _RewardsResponseRemainsUnknown = Expect<
   IsExactlyUnknown<RewardsCommitmentsCreateResponse>
 >;
 type _SalesResponseRemainsUnknown = Expect<IsExactlyUnknown<SalesCreateResponse>>;
+type _ErrorBodiesRemainUnknown = Expect<IsExactlyUnknown<MyPOSConnectErrorBody>>;
 
 const namedConstructor: typeof MyPOSConnectDefault = MyPOSConnect;
 const defaultConstructor: typeof MyPOSConnect = MyPOSConnectDefault;
@@ -50,7 +65,7 @@ async function compilePublicApi(client: MyPOSConnect, signal: AbortSignal): Prom
     },
     { headers: { 'X-Correlation-ID': 'example' }, signal },
   );
-  const product: Customer | unknown = await client.products.retrieve({
+  const product: Product = await client.products.retrieve({
     ProductCode: 'SKU-1',
   });
   await client.products.listChanged({ LastEditDate: '2026-07-16T12:30:45' });

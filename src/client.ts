@@ -209,7 +209,7 @@ export type CustomersGlobalUpdateParameters = GlobalCustomerUpdateRequestWritabl
   EmailAddress: string;
 };
 
-export class AuthTokensResource {
+class AuthTokensResource {
   constructor(private readonly transport: Transport) {}
 
   create(options?: RequestOptions): Promise<AuthTokensCreateResponse> {
@@ -219,7 +219,7 @@ export class AuthTokensResource {
   }
 }
 
-export class AuthResource {
+class AuthResource {
   readonly tokens: AuthTokensResource;
 
   constructor(transport: Transport) {
@@ -227,7 +227,7 @@ export class AuthResource {
   }
 }
 
-export class ProductsStoreDataResource {
+class ProductsStoreDataResource {
   constructor(private readonly transport: Transport) {}
 
   listChanged(
@@ -273,7 +273,7 @@ export class ProductsStoreDataResource {
   }
 }
 
-export class ProductsSerialNumbersResource {
+class ProductsSerialNumbersResource {
   constructor(private readonly transport: Transport) {}
 
   retrieveStatus(
@@ -289,7 +289,7 @@ export class ProductsSerialNumbersResource {
   }
 }
 
-export class ProductsResource {
+class ProductsResource {
   readonly serialNumbers: ProductsSerialNumbersResource;
   readonly storeData: ProductsStoreDataResource;
 
@@ -335,7 +335,7 @@ export class ProductsResource {
   }
 }
 
-export class CustomersGlobalResource {
+class CustomersGlobalResource {
   constructor(private readonly transport: Transport) {}
 
   retrieve(
@@ -365,7 +365,7 @@ export class CustomersGlobalResource {
   }
 }
 
-export class CustomersResource {
+class CustomersResource {
   readonly global: CustomersGlobalResource;
 
   constructor(private readonly transport: Transport) {
@@ -409,7 +409,7 @@ export class CustomersResource {
   }
 }
 
-export class StoresResource {
+class StoresResource {
   constructor(private readonly transport: Transport) {}
 
   list(
@@ -422,7 +422,7 @@ export class StoresResource {
   }
 }
 
-export class InventoryCommitmentsResource {
+class InventoryCommitmentsResource {
   constructor(private readonly transport: Transport) {}
 
   create(
@@ -447,7 +447,7 @@ export class InventoryCommitmentsResource {
   }
 }
 
-export class InventoryResource {
+class InventoryResource {
   readonly commitments: InventoryCommitmentsResource;
 
   constructor(transport: Transport) {
@@ -455,7 +455,7 @@ export class InventoryResource {
   }
 }
 
-export class RewardsCommitmentsResource {
+class RewardsCommitmentsResource {
   constructor(private readonly transport: Transport) {}
 
   create(
@@ -471,7 +471,7 @@ export class RewardsCommitmentsResource {
   }
 }
 
-export class RewardsResource {
+class RewardsResource {
   readonly commitments: RewardsCommitmentsResource;
 
   constructor(transport: Transport) {
@@ -479,7 +479,7 @@ export class RewardsResource {
   }
 }
 
-export class SalesResource {
+class SalesResource {
   constructor(private readonly transport: Transport) {}
 
   create(
