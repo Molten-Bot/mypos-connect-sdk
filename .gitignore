@@ -11,10 +11,6 @@ build/
 reports/
 *.tgz
 
-# Local Stainless CLI workspace and generated previews
-.stainless/
-mypos-connect-typescript/
-
 # Logs and local runtime configuration
 *.log
 .env
