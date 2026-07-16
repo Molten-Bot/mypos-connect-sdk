@@ -47,6 +47,12 @@ const client = new MyPOSConnect({
 
 `fetch` is optional and is useful for supported runtime adapters and tests.
 
+CommonJS consumers can use the named export:
+
+```js
+const { MyPOSConnect } = require('@molten-ai/mypos-connect-sdk');
+```
+
 ## Obtain a token with Basic authentication
 
 Token creation uses the API user email and password as HTTP Basic credentials.
@@ -146,6 +152,46 @@ such values in application code before using them.
 [`openapi.yaml`](openapi.yaml) is the executable source of truth for wire
 behavior and generated types. [`sdk.md`](sdk.md) is the supporting MyPOS Connect
 API guide. If they conflict, `openapi.yaml` controls the SDK.
+
+## Development
+
+The generator is pinned to `@hey-api/openapi-ts@0.99.0`, and its output in
+`src/generated` is committed. After changing `openapi.yaml`, regenerate and run
+the complete release check:
+
+```sh
+corepack enable
+pnpm install --frozen-lockfile
+pnpm generate
+pnpm validate
+```
+
+`pnpm validate` lints the OpenAPI document, checks generated-code drift, performs
+strict type checking, runs the operation tests, builds both module formats,
+runs `publint`, inspects the npm tarball, and installs that tarball into clean ESM
+and CommonJS consumers.
+
+## Publishing
+
+The initial `0.1.0` release is intentionally manual. A maintainer with access to
+the `@molten-ai` npm scope should run:
+
+```sh
+npm login
+npm whoami
+npm access list packages @molten-ai
+pnpm validate
+npm publish --access public
+npm view @molten-ai/mypos-connect-sdk@0.1.0 name version dist-tags
+```
+
+For later releases, `.github/workflows/publish.yml` uses npm trusted publishing
+and provenance. After `0.1.0` exists, create the `npm-release` GitHub environment
+and configure the npm trusted publisher for repository
+`Molten-Bot/mypos-connect-sdk`, workflow `publish.yml`, and environment
+`npm-release`, with `npm publish` as an allowed action. Publishing a
+non-prerelease GitHub release whose tag matches the package version will then
+run the same validation before publication.
 
 ## License and status
 
