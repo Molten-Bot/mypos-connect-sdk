@@ -10,10 +10,14 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "files": [
@@ -39,12 +43,13 @@
     "generate": "openapi-ts",
     "generate:check": "pnpm run generate && git diff --exit-code -- src/generated",
     "lint:openapi": "redocly lint openapi.yaml --lint-config=error",
-    "package:check": "publint",
+    "package:check": "pnpm run build && publint --pack false --strict && pnpm run package:smoke",
+    "package:smoke": "node scripts/package-smoke.mjs",
     "prepack": "pnpm run build",
     "prepublishOnly": "pnpm run validate",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "validate": "pnpm run lint:openapi && pnpm run generate:check && pnpm run typecheck && pnpm run test && pnpm run build && pnpm run package:check"
+    "validate": "pnpm run lint:openapi && pnpm run generate:check && pnpm run typecheck && pnpm run test && pnpm run package:check"
   },
   "keywords": [
     "mypos",

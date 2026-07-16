@@ -106,6 +106,7 @@ class Transport {
         throw new Error('MyPOS Connect requested an unsupported authentication scheme');
       },
       baseUrl: baseURL,
+      parseAs: 'json',
       responseStyle: 'fields',
       throwOnError: true,
     };
@@ -116,7 +117,7 @@ class Transport {
 
     this.client = createClient(config);
     this.client.interceptors.error.use((error, response, request) => {
-      if (!response) {
+      if (!response || response.ok) {
         return error;
       }
 
@@ -147,7 +148,11 @@ class Transport {
           'Set MyPOS Connect credentials on the client instead of overriding Authorization',
         );
       }
-      generated.headers = headers;
+
+      // The generated body operations merge request headers with object spread,
+      // which does not enumerate a Headers instance. Use a plain record so custom
+      // headers are preserved consistently for GET, POST, and PUT operations.
+      generated.headers = Object.fromEntries(headers.entries());
     }
 
     if (options?.signal) {
