@@ -1,2 +1,39 @@
-// The public facade is implemented over the generated operations after code generation.
-export * from './generated/index.js';
+export {
+  AuthResource,
+  AuthTokensResource,
+  CustomersGlobalResource,
+  CustomersResource,
+  DEFAULT_BASE_URL,
+  InventoryCommitmentsResource,
+  InventoryResource,
+  MyPOSConnect,
+  MyPOSConnect as default,
+  ProductsResource,
+  ProductsSerialNumbersResource,
+  ProductsStoreDataResource,
+  RewardsCommitmentsResource,
+  RewardsResource,
+  SalesResource,
+  StoresResource,
+  type CustomersGlobalUpdateParameters,
+  type CustomersRetrieveParameters,
+  type CustomersUpdateParameters,
+  type InventoryCommitmentsRetrieveParameters,
+  type MyPOSConnectOptions,
+  type ProductsListAlternateParameters,
+  type ProductsListChangedParameters,
+  type ProductsListParameters,
+  type ProductsRetrieveParameters,
+  type ProductsSerialNumbersRetrieveStatusParameters,
+  type ProductsStoreDataListChangedParameters,
+  type ProductsStoreDataListChangedWithOnOrderParameters,
+  type ProductsStoreDataRetrieveParameters,
+  type ProductsStoreDataRetrieveWithOnOrderParameters,
+  type RequestOptions,
+  type StoresListParameters,
+} from './client.js';
+export {
+  MyPOSConnectError,
+  type MyPOSConnectErrorOptions,
+} from './error.js';
+export type * from './generated/types.gen.js';
