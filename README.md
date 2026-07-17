@@ -185,7 +185,7 @@ publishing can only be configured after the package exists. Create the
 run the workflow. The token must grant write access to the `@molten-ai` scope and
 be allowed to bypass 2FA for the non-interactive publish.
 
-After `0.1.0` exists, configure the npm trusted publisher for repository
+After the first version exists, configure the npm trusted publisher for repository
 `Molten-Bot/mypos-connect-sdk`, workflow `publish.yml`, and environment
 `npm-release`, with `npm publish` as an allowed action. Then delete the
 `NPM_TOKEN` environment secret and revoke the bootstrap token. Later workflow
