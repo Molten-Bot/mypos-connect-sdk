@@ -35,7 +35,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=26"
+    "node": ">=24"
   },
   "packageManager": "pnpm@11.13.0",
   "scripts": {
@@ -61,7 +61,7 @@
   "devDependencies": {
     "@hey-api/openapi-ts": "0.99.0",
     "@redocly/cli": "2.39.0",
-    "@types/node": "26.1.1",
+    "@types/node": "24.13.3",
     "publint": "0.3.21",
     "tsup": "8.5.1",
     "typescript": "6.0.3",

@@ -2,9 +2,11 @@
 
 An unofficial, server-side TypeScript client for the MyPOS Connect API v2.
 
-The SDK requires Node.js 26 or newer, uses the standard Fetch API, and ships
-both ESM and CommonJS entry points. It preserves the API's path, query, and JSON
-property casing exactly as documented.
+When used in a Node.js runtime, the SDK requires Node.js 24 or newer. The
+published bundle uses standard Fetch and Web APIs without Node.js built-in
+imports, so it is also suitable for Cloudflare Workers as well as Vercel
+Functions. It ships both ESM and CommonJS entry points and preserves the API's
+path, query, and JSON property casing exactly as documented.
 
 ## Install
 
@@ -176,8 +178,8 @@ and CommonJS consumers.
 The version in `package.json` is the release source of truth. Publishing does not
 depend on a Git tag or GitHub Release. To release a new version, update the
 `version` field, merge that change to `main`, and run the `Publish to npm`
-workflow from `main` with its confirmation input enabled. The workflow validates
-the checked-out package before publishing it.
+workflow from `main`. The workflow validates the checked-out package before
+publishing it.
 
 The first publication needs a short-lived granular npm token because npm trusted
 publishing can only be configured after the package exists. Create the
