@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 20
     environment:
       name: npm-release
-      url: https://www.npmjs.com/package/@molten-ai/mypos-connect-sdk
+      url: https://www.npmjs.com/package/@moltenbot/mypos-connect-sdk
 
     steps:
       - name: Check out source revision
@@ -41,7 +41,7 @@ jobs:
           PACKAGE_NAME="$(node -p "require('./package.json').name")"
           PACKAGE_VERSION="$(node -p "require('./package.json').version")"
 
-          if [ "$PACKAGE_NAME" != "@molten-ai/mypos-connect-sdk" ]; then
+          if [ "$PACKAGE_NAME" != "@moltenbot/mypos-connect-sdk" ]; then
             echo "Refusing to publish unexpected package: $PACKAGE_NAME" >&2
             exit 1
           fi
@@ -51,7 +51,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version: 26
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
