@@ -10,6 +10,6 @@ export default defineConfig({
   },
   sourcemap: true,
   splitting: false,
-  target: 'node22',
+  target: 'node26',
   treeshake: true,
 });

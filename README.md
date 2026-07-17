@@ -2,14 +2,14 @@
 
 An unofficial, server-side TypeScript client for the MyPOS Connect API v2.
 
-The SDK requires Node.js 22 or newer, uses the standard Fetch API, and ships
+The SDK requires Node.js 26 or newer, uses the standard Fetch API, and ships
 both ESM and CommonJS entry points. It preserves the API's path, query, and JSON
 property casing exactly as documented.
 
 ## Install
 
 ```sh
-npm install @molten-ai/mypos-connect-sdk
+npm install @moltenbot/mypos-connect-sdk
 ```
 
 ## Use a bearer token
@@ -18,7 +18,7 @@ Most operations require a JWT bearer token. The API documentation says tokens
 are valid for 120 minutes; this SDK does not refresh them automatically.
 
 ```ts
-import MyPOSConnect from '@molten-ai/mypos-connect-sdk';
+import MyPOSConnect from '@moltenbot/mypos-connect-sdk';
 
 const client = new MyPOSConnect({
   accessToken: process.env.MYPOS_CONNECT_ACCESS_TOKEN,
@@ -36,7 +36,7 @@ The default API URL is `https://api.myposconnect.com/api/v2`. Override it when
 using another endpoint:
 
 ```ts
-import { MyPOSConnect } from '@molten-ai/mypos-connect-sdk';
+import { MyPOSConnect } from '@moltenbot/mypos-connect-sdk';
 
 const client = new MyPOSConnect({
   baseURL: 'https://example.test/api/v2',
@@ -50,7 +50,7 @@ const client = new MyPOSConnect({
 CommonJS consumers can use the named export:
 
 ```js
-const { MyPOSConnect } = require('@molten-ai/mypos-connect-sdk');
+const { MyPOSConnect } = require('@moltenbot/mypos-connect-sdk');
 ```
 
 ## Obtain a token with Basic authentication
@@ -61,7 +61,7 @@ the result is intentionally typed as `unknown`. Validate it against the response
 contract supplied for your account before extracting and storing the JWT.
 
 ```ts
-import { MyPOSConnect } from '@molten-ai/mypos-connect-sdk';
+import { MyPOSConnect } from '@moltenbot/mypos-connect-sdk';
 
 const auth = new MyPOSConnect({
   username: process.env.MYPOS_CONNECT_USERNAME,
@@ -124,7 +124,7 @@ Non-2xx responses throw `MyPOSConnectError`. The error contains the HTTP
 import {
   MyPOSConnect,
   MyPOSConnectError,
-} from '@molten-ai/mypos-connect-sdk';
+} from '@moltenbot/mypos-connect-sdk';
 
 const client = new MyPOSConnect({
   accessToken: process.env.MYPOS_CONNECT_ACCESS_TOKEN,
@@ -182,7 +182,7 @@ the checked-out package before publishing it.
 The first publication needs a short-lived granular npm token because npm trusted
 publishing can only be configured after the package exists. Create the
 `npm-release` GitHub environment, add the token as its `NPM_TOKEN` secret, and
-run the workflow. The token must grant write access to the `@molten-ai` scope and
+run the workflow. The token must grant write access to the `@moltenbot` scope and
 be allowed to bypass 2FA for the non-interactive publish.
 
 After the first version exists, configure the npm trusted publisher for repository
@@ -194,7 +194,7 @@ runs will authenticate through npm trusted publishing and OIDC.
 Verify each published version using the value from `package.json`:
 
 ```sh
-npm view "@molten-ai/mypos-connect-sdk@$(node -p "require('./package.json').version")" name version dist-tags
+npm view "@moltenbot/mypos-connect-sdk@$(node -p "require('./package.json').version")" name version dist-tags
 ```
 
 ## License and status

@@ -1,5 +1,5 @@
 {
-  "name": "@molten-ai/mypos-connect-sdk",
+  "name": "@moltenbot/mypos-connect-sdk",
   "version": "0.0.1",
   "description": "Unofficial server-first TypeScript SDK for the MyPOS Connect API",
   "license": "MIT",
@@ -35,7 +35,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=26"
   },
   "packageManager": "pnpm@11.13.0",
   "scripts": {
@@ -61,7 +61,7 @@
   "devDependencies": {
     "@hey-api/openapi-ts": "0.99.0",
     "@redocly/cli": "2.39.0",
-    "@types/node": "22.20.1",
+    "@types/node": "26.1.1",
     "publint": "0.3.21",
     "tsup": "8.5.1",
     "typescript": "6.0.3",

@@ -5,8 +5,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const PACKAGE_NAME = '@molten-ai/mypos-connect-sdk';
-const MINIMUM_NODE_MAJOR = 22;
+const PACKAGE_NAME = '@moltenbot/mypos-connect-sdk';
+const MINIMUM_NODE_MAJOR = 26;
 const REQUIRED_FILES = [
   'LICENSE',
   'README.md',
