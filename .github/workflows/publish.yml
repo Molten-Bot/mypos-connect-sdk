@@ -1,16 +1,10 @@
 name: Publish to npm
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
-      tag:
-        description: Existing release tag to publish (for example, v0.1.0)
-        required: true
-        type: string
       confirm:
-        description: Confirm publication to the public npm registry
+        description: Publish the version declared in package.json from main
         required: true
         default: false
         type: boolean
@@ -20,15 +14,13 @@ permissions:
   id-token: write
 
 concurrency:
-  group: npm-publish-${{ github.event.release.tag_name || inputs.tag }}
+  group: npm-publish
   cancel-in-progress: false
 
 jobs:
   publish:
-    name: Publish ${{ github.event.release.tag_name || inputs.tag }}
-    if: >-
-      (github.event_name == 'release' && !github.event.release.prerelease) ||
-      (github.event_name == 'workflow_dispatch' && inputs.confirm)
+    name: Publish package.json version
+    if: inputs.confirm
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:
@@ -36,16 +28,16 @@ jobs:
       url: https://www.npmjs.com/package/@molten-ai/mypos-connect-sdk
 
     steps:
-      - name: Check out release tag
+      - name: Check out source revision
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
-          fetch-depth: 0
 
-      - name: Verify release tag and package identity
-        env:
-          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      - name: Verify source branch and package identity
         run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "Refusing to publish from $GITHUB_REF; dispatch this workflow from main" >&2
+            exit 1
+          fi
+
           PACKAGE_NAME="$(node -p "require('./package.json').name")"
           PACKAGE_VERSION="$(node -p "require('./package.json').version")"
 
@@ -54,22 +46,7 @@ jobs:
             exit 1
           fi
 
-          if [ "$RELEASE_TAG" != "v$PACKAGE_VERSION" ] && [ "$RELEASE_TAG" != "$PACKAGE_VERSION" ]; then
-            echo "Release tag $RELEASE_TAG does not match package version $PACKAGE_VERSION" >&2
-            exit 1
-          fi
-
-          if ! git show-ref --verify --quiet "refs/tags/$RELEASE_TAG"; then
-            echo "Release tag $RELEASE_TAG does not exist" >&2
-            exit 1
-          fi
-
-          TAG_COMMIT="$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
-          HEAD_COMMIT="$(git rev-parse HEAD)"
-          if [ "$TAG_COMMIT" != "$HEAD_COMMIT" ]; then
-            echo "Checked-out commit does not match release tag $RELEASE_TAG" >&2
-            exit 1
-          fi
+          echo "Publishing $PACKAGE_NAME@$PACKAGE_VERSION from $GITHUB_SHA"
 
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -94,5 +71,9 @@ jobs:
       - name: Validate release package
         run: pnpm validate
 
-      - name: Publish with npm trusted publishing
+      - name: Publish package
         run: npm publish --provenance --access public
+        env:
+          # Required only to bootstrap the first version. Remove the environment
+          # secret after configuring npm trusted publishing for later versions.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

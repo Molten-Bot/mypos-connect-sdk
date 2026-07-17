@@ -1,6 +1,6 @@
 {
   "name": "@molten-ai/mypos-connect-sdk",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Unofficial server-first TypeScript SDK for the MyPOS Connect API",
   "license": "MIT",
   "type": "module",

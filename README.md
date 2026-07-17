@@ -173,25 +173,29 @@ and CommonJS consumers.
 
 ## Publishing
 
-The initial `0.1.0` release is intentionally manual. A maintainer with access to
-the `@molten-ai` npm scope should run:
+The version in `package.json` is the release source of truth. Publishing does not
+depend on a Git tag or GitHub Release. To release a new version, update the
+`version` field, merge that change to `main`, and run the `Publish to npm`
+workflow from `main` with its confirmation input enabled. The workflow validates
+the checked-out package before publishing it.
+
+The first publication needs a short-lived granular npm token because npm trusted
+publishing can only be configured after the package exists. Create the
+`npm-release` GitHub environment, add the token as its `NPM_TOKEN` secret, and
+run the workflow. The token must grant write access to the `@molten-ai` scope and
+be allowed to bypass 2FA for the non-interactive publish.
+
+After the first version exists, configure the npm trusted publisher for repository
+`Molten-Bot/mypos-connect-sdk`, workflow `publish.yml`, and environment
+`npm-release`, with `npm publish` as an allowed action. Then delete the
+`NPM_TOKEN` environment secret and revoke the bootstrap token. Later workflow
+runs will authenticate through npm trusted publishing and OIDC.
+
+Verify each published version using the value from `package.json`:
 
 ```sh
-npm login
-npm whoami
-npm access list packages @molten-ai
-pnpm validate
-npm publish --access public
-npm view @molten-ai/mypos-connect-sdk@0.1.0 name version dist-tags
+npm view "@molten-ai/mypos-connect-sdk@$(node -p "require('./package.json').version")" name version dist-tags
 ```
-
-For later releases, `.github/workflows/publish.yml` uses npm trusted publishing
-and provenance. After `0.1.0` exists, create the `npm-release` GitHub environment
-and configure the npm trusted publisher for repository
-`Molten-Bot/mypos-connect-sdk`, workflow `publish.yml`, and environment
-`npm-release`, with `npm publish` as an allowed action. Publishing a
-non-prerelease GitHub release whose tag matches the package version will then
-run the same validation before publication.
 
 ## License and status
 
