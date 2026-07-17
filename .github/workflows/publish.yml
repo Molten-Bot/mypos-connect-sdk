@@ -2,12 +2,6 @@ name: Publish to npm
 
 on:
   workflow_dispatch:
-    inputs:
-      confirm:
-        description: Publish the version declared in package.json from main
-        required: true
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -20,7 +14,6 @@ concurrency:
 jobs:
   publish:
     name: Publish package.json version
-    if: inputs.confirm
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:

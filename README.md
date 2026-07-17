@@ -178,8 +178,8 @@ and CommonJS consumers.
 The version in `package.json` is the release source of truth. Publishing does not
 depend on a Git tag or GitHub Release. To release a new version, update the
 `version` field, merge that change to `main`, and run the `Publish to npm`
-workflow from `main` with its confirmation input enabled. The workflow validates
-the checked-out package before publishing it.
+workflow from `main`. The workflow validates the checked-out package before
+publishing it.
 
 The first publication needs a short-lived granular npm token because npm trusted
 publishing can only be configured after the package exists. Create the
